@@ -1,4 +1,7 @@
-
+from .runtime import Runtime
+from .storage import Storage
+from . import template
+from .exceptions import *
 
 DECLGen_meta = dict(
     name="DECL-Gen",
@@ -9,13 +12,12 @@ DECLGen_meta = dict(
     author="Basilius Sauter",
     author_email="basilius.sauter@unibas.ch",
 
-    packages=find_packages(),
-    install_requires = [
+    install_requires=[
         "argh",
         "rdkit"
     ],
 
-    entry_points = {
+    entry_points={
         "console_scripts": [
             'declGen=DECLGen.cli.main:main',
         ]

@@ -1,7 +1,5 @@
 from setuptools import setup, find_packages
 
-from .DECLGen import DECLGen_meta
-
 build_exe_options = {
     "includes": [
         "sys",
@@ -12,4 +10,23 @@ build_exe_options = {
     ],
 }
 
-setup(**DECLGen_meta)
+setup(
+    name="DECL-Gen",
+    version="v1.0-alpha",
+    description="A tool to generate DNA encoded libraries from fragments",
+    url="https://github.com/Gillingham-Lab/DECL-Gen",
+
+    author="Basilius Sauter",
+    author_email="basilius.sauter@unibas.ch",
+
+    packages=find_packages(),
+    install_requires=[
+        "argh",
+    ],
+
+    entry_points={
+        "console_scripts": [
+            'declGen=DECLGen.cli.main:main',
+        ]
+    }
+)
