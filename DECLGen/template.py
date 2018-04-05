@@ -1,6 +1,7 @@
 from typing import List
 import re
 import sys
+from rdkit import Chem
 
 _search_pattern = r"\[R([0-9]+)\]"
 
@@ -58,15 +59,16 @@ def _parse_callback(n) -> str:
 
 
 def parse(raw_template: str) -> str:
-    return re.sub(search_pattern, _parse_callback, raw_template)
+    return re.sub(_search_pattern, _parse_callback, raw_template)
 
 
-search_pattern = r"\[R([0-9]+)\]"
+def is_valid(parsed: str, anchors: List[str]) -> bool:
+    test_smiles_fragments = [parse("C[{}]".format(x)) for x in anchors]
+    fragments = [parsed] + test_smiles_fragments
+    smiles = ".".join(fragments)
 
-
-
-def count_r_groups_in_template(raw_template: str) -> int:
-    return len(re.findall(search_pattern, raw_template))
-
-def get_r_groups_in_template(raw_template: str) -> List[str]:
-    return ["R{}".format(x) for x in re.findall(search_pattern, raw_template)]
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return False
+    else:
+        return True

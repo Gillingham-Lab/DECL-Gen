@@ -16,7 +16,6 @@ class Storage:
     library = None
 
     def __init__(self):
-        self.bases = "ATGC"
         self.raw_template = None
         self.smiles_template = None
         self.dna_template = None

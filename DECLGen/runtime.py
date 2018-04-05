@@ -3,7 +3,8 @@ import sys
 from blessings import Terminal
 from pickle import dump, load
 from .storage import Storage
-from .exceptions import LibraryExistsError, LibraryNotInitializedError
+from .codon import CodonConfig
+from .exceptions import DECLException, LibraryExistsError, LibraryNotInitializedError
 
 
 class Runtime:
@@ -39,8 +40,13 @@ class Runtime:
             storage = load(datafile)
 
         self.storage = storage
+        CodonConfig.bases = storage.bases
         self.t = Terminal()
 
     def save(self):
         with open("decl_gen.data", "wb") as datafile:
             dump(self.storage, datafile, 4)
+
+    def error_exit(self, e: DECLException):
+        print("{t.red}{e}{t.normal}".format(t=self.t, e=e), file=sys.stderr)
+        exit(e.exitcode)

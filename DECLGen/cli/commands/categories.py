@@ -2,6 +2,7 @@ import argh
 import sys
 from DECLGen import Runtime
 from DECLGen.exceptions import \
+    DECLException, \
     LibraryCategoryException, \
     LibraryCategoryExistsException, \
     LibraryCategoryNotFoundException
@@ -23,8 +24,7 @@ def cat_list():
         for cat in cats:
             print(table_entry.format(**cat.describe(), t=r.t))
     except LibraryCategoryException as e:
-        print(e, file=sys.stderr)
-        exit(e.exitcode)
+        r.error_exit(e)
 
 
 def cat_show(id: "Category identifier"):
@@ -55,9 +55,8 @@ def cat_show(id: "Category identifier"):
         if "min_codon_length" in cat_desc:
             print("  {t.bold}{title:<20}{t.normal}{value:>20}".format(
                 t=r.t, title="Codon length needed", value=cat_desc["min_codon_length"]))
-    except LibraryCategoryException as e:
-        print("{t.red}{message}{t.normal}".format(t=r.t, message=e), file=sys.stderr)
-        exit(e.exitcode)
+    except DECLException as e:
+        r.error_exit(e)
 
 
 @argh.arg("anchors", nargs="+")
@@ -79,7 +78,7 @@ def cat_add(
             print("If you want to edit some parts, use {exec} DEC-edit instead.".format(exec=sys.argv[0]))
 
             while True:
-                answer = input("Proceed anway (Y/n)? ")
+                answer = input("Proceed anyway (Y/n)? ")
                 answer = answer[0]
                 if answer == "Y" or answer == "n":
                     break
@@ -91,9 +90,8 @@ def cat_add(
             r.storage.library.add_category(id, name, anchors, codon_length)
         else:
             print("Category was not added.")
-    except LibraryCategoryException as e:
-        print(e)
-        exit(e.exitcode)
+    except DECLException as e:
+        r.error_exit(e)
 
     r.save()
 
@@ -104,15 +102,14 @@ def cat_del(id: "Category identifier"):
 
     try:
         r.storage.library.del_category(id)
-    except LibraryCategoryException as e:
-        print(e, file=sys.stderr)
-        exit(e.exitcode)
+    except DECLException as e:
+        r.error_exit(e)
 
     r.save()
 
 
 def cat_edit(
-    id: "Desired category identifier",
+    id: "Category identifier",
     name: "A human-readable name for this category" = None,
     codon_length: "The desired length of the codon. Codon length is flexible if not given or if set to 0." = None
 ) -> None:
@@ -126,31 +123,20 @@ def cat_edit(
             cat.set_name(name)
         if codon_length is not None:
             cat.set_codon_length(int(codon_length))
-    except LibraryCategoryNotFoundException as e:
-        print("{t.red}Library category not found{t.normal}".format(t=r.t), file=sys.stderr)
-        exit(e.exitcode)
-    except LibraryCategoryException as e:
-        print("{t.red}{e}{t.normal}".format(t=r.t, e=e), file=sys.stderr)
-        exit(e.exitcode)
-    except Exception as e:
-        print("{t.red}{e}{t.normal}".format(t=r.t, e=e), file=sys.stderr)
-        exit(1)
+    except DECLException as e:
+        r.error_exit(e)
 
     r.save()
 
 
-def cat_clear(id: "Desired category identifier"):
+def cat_clear(id: "Category identifier"):
     """Removes all diversity elements from a given diversity element category"""
     r = Runtime()
 
     try:
         cat = r.storage.library.get_category(id)
         cat.clear()
-    except LibraryCategoryNotFoundException as e:
-        print("{t.red}Library category not found{t.normal}".format(t=r.t), file=sys.stderr)
-        exit(e.exitcode)
-    except LibraryCategoryException as e:
-        print(e, file=sys.stderr)
-        exit(e.exitcode)
+    except DECLException as e:
+        r.error_exit(e)
 
     r.save()

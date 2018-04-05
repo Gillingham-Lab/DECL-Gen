@@ -26,3 +26,16 @@ class LibraryCategoryNotFoundException(LibraryCategoryException):
 
 class LibraryCategoryExistsException(LibraryCategoryException):
     exitcode = 23
+
+
+class LibraryElementException(DECLException):
+    exitcode = 30
+
+
+class LibraryElementNotFoundException(LibraryCategoryException):
+    exitcode = 32
+
+
+class LibraryElementExistsException(LibraryCategoryException):
+    exitcode = 33
+

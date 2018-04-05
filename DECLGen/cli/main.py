@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 import argh
-
 from DECLGen.cli.commands import about, commands
 
 
