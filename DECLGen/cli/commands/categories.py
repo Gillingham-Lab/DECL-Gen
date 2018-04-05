@@ -42,12 +42,16 @@ def cat_show(id: "Category identifier"):
         print("  {t.bold}{title:<20}{t.normal}{value:>20}".format(
             t=r.t, title="Number of elements", value=cat_desc["elements"]))
 
-        if int(cat_desc["elements"]) < int(cat_desc["max_elements"]):
-            print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
-                t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))
-        elif int(cat_desc["elements"]) == int(cat_desc["max_elements"]):
-            print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
-                t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))
+        if type(cat_desc["max_elements"]) is int:
+            if int(cat_desc["elements"]) < int(cat_desc["max_elements"]):
+                print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
+                    t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))
+            elif int(cat_desc["elements"]) == int(cat_desc["max_elements"]):
+                print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
+                    t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))
+            else:
+                print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
+                    t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))
         else:
             print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
                 t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))

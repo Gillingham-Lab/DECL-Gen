@@ -1,4 +1,6 @@
-from typing import List, Union, Dict
+from typing import List, Set, Dict
+from operator import mul
+from functools import reduce
 from DECLGen.exceptions import \
     LibraryCategoryException, \
     LibraryCategoryExistsException, \
@@ -43,7 +45,9 @@ class Library:
     def describe(self) -> Dict[str, str]:
         description = {
             "Template": self.storage.raw_template,
-            "R-Groups": ", ".join(self.anchors)
+            "R-Groups": ", ".join(self.anchors),
+            "Library Shape": ", ".join([str(x) for x in self.shape]),
+            "Library Size": reduce(mul, self.shape, 1)
         }
 
         return description
@@ -62,6 +66,13 @@ class Library:
             raise LibraryCategoryNotFoundException("Library category <{}> not found".format(id))
 
         return self.categories[id]
+
+    @property
+    def shape(self) -> Set[int]:
+        shape = []
+        for cat in self.categories.values():
+            shape.append(len(cat))
+        return set(shape)
 
     def add_category(self, id: str, name: str, anchors: List[str], codon_length: int = 0) -> bool:
         """

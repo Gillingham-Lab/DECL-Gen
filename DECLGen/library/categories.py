@@ -1,8 +1,10 @@
 import math
+import os
 from typing import List, Dict, Union
 from DECLGen import codon, template
 from DECLGen.exceptions import \
     LibraryCategoryException, \
+    LibraryCategoryFullException, \
     LibraryElementException, \
     LibraryElementNotFoundException, \
     LibraryElementExistsException
@@ -27,6 +29,9 @@ class Category:
         for index in self.elements:
             yield self.elements[index]
 
+    def __len__(self):
+        return len(self.elements)
+
     def get_anchors(self):
         return self.anchors
 
@@ -39,14 +44,21 @@ class Category:
 
         self.codon_length = codon_length
 
-    def get_codon_length(self):
+    def get_codon_length(self) -> int:
         """ Returns the set codon length if set > 0 or the minimum codon length required if set = 0"""
         if self.codon_length > 0:
             return self.codon_length
         else:
             return math.ceil(
-                math.log(len(self.elements), len(codon.CodonConfig.bases))
+                math.log(min(1, len(self.elements)), len(codon.CodonConfig.bases))
             )
+
+    def get_max_elements(self) -> int:
+        """ Returns the maximum amount of elements available for the current set codon size """
+        if self.codon_length == 0:
+            return -1
+        else:
+            return len(codon.CodonConfig.bases)**self.codon_length
 
     def clear(self):
         self.elements = {}
@@ -59,15 +71,18 @@ class Category:
             "anchors": ", ".join(self.anchors),
             "codon_length": "variable" if self.codon_length == 0 else str(self.codon_length),
             "elements": len(self.elements),
-            "max_elements": "unlimited" if self.codon_length == 0 else str(len(codon.CodonConfig.bases)**self.codon_length),
+            "max_elements": "unlimited" if self.codon_length == 0 else str(self.get_max_elements()),
         }
 
         if self.codon_length == 0:
-            description["min_codon_length"] = math.ceil(math.log(len(self.elements), len(codon.CodonConfig.bases)))
+            description["min_codon_length"] = str(self.get_codon_length())
 
         return description
 
     def has_index(self, index: Union[str, int]):
+        if type(index) == str:
+            index = codon.decode(index)
+
         if index in self.elements:
             return True
         else:
@@ -82,6 +97,15 @@ class Category:
             else:
                 index = 0
 
+        if index >= self.get_max_elements():
+            raise LibraryCategoryFullException(
+                "This library category <{id}> can only store {max} compounds (codon size={codon}).".format(
+                    id=self.id,
+                    max=self.get_max_elements(),
+                    codon=self.get_codon_length()
+                )
+            )
+
         if self.has_index(index):
             raise LibraryElementExistsException(
                 "An element with the index <{index}> already exists in category <{cat}>".format(
@@ -89,7 +113,6 @@ class Category:
                     cat=self.id
                 )
             )
-
 
         # Check if R-group requirement is met
         anchors = template.get_anchors(elm_smiles)
@@ -134,3 +157,31 @@ class Category:
             self.element_smiles.remove(elm.smiles)
         except ValueError:
             pass
+
+    def import_elements(self, filename: str, updateable = None) -> int:
+        if not os.path.exists(filename):
+            raise LibraryElementException("The file <{}> does not exist.".format(filename))
+
+        with open(filename, "r") as file:
+            # Count lines and auto-detect format
+            line_count = 0
+            for line in file:
+                line_count += 1
+
+            file.seek(0)
+
+            c = 0
+            for line in file:
+                cols = line.strip().split("\t")
+                codon = cols[0]
+                smiles = cols[1]
+
+                if self.has_index(codon):
+                    self.del_element(codon)
+
+                self.add_element(smiles, codon)
+
+                updateable.update(c/line_count)
+                c += 1
+
+        return c

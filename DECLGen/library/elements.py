@@ -3,6 +3,7 @@ from DECLGen.exceptions import LibraryElementException
 
 
 class Element:
+    """Represents a diversity element. A element always belongs to a category"""
     cat = None
     smiles = None
     index = None
