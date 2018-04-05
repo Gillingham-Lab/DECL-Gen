@@ -7,4 +7,4 @@ def lib_info():
 
     description = r.storage.library.describe()
     for key in description:
-        print("{key:<15} {value}".format(key=key + ":", value=description[key]))
+        print("{t.bold}{key:<15}{t.normal} {value}".format(t=r.t, key=key + ":", value=description[key]))
