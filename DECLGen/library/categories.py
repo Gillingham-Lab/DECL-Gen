@@ -49,9 +49,9 @@ class Category:
         if self.codon_length > 0:
             return self.codon_length
         else:
-            return math.ceil(
-                math.log(min(1, len(self.elements)), len(codon.CodonConfig.bases))
-            )
+            return int(math.ceil(
+                math.log(max(1, len(self.elements)), len(codon.CodonConfig.bases))
+            ))
 
     def get_max_elements(self) -> int:
         """ Returns the maximum amount of elements available for the current set codon size """
@@ -116,7 +116,7 @@ class Category:
             else:
                 index = 0
 
-        if index >= self.get_max_elements():
+        if self.get_max_elements() > 0 and index >= self.get_max_elements():
             raise LibraryCategoryFullException(
                 "This library category <{id}> can only store {max} compounds (codon size={codon}).".format(
                     id=self.id,
