@@ -23,14 +23,13 @@ class Storage:
         self.library = Library(self)
 
     def set_template(self, template_string):
+        if self.raw_template is not None:
+            raise LibraryTemplateException("Cannot re-set the template via Storage.set_template() after it has been initialized.")
+
         if template.count_anchors(template_string) <= 0:
             raise LibraryTemplateException("The number of R-Groups ([R1], [R2], etc) must be >= 1")
 
-        # We must sanitize the template first in case the R group is at the beginning
-        template_string = template.sanitize(template_string)
-
-        self.raw_template = template_string
-        self.smiles_template = template.parse(template_string)
+        self.library.change_template(template_string)
 
         # Sets the libraries R-Groups
         self.library.set_anchors(template.get_anchors(template_string))

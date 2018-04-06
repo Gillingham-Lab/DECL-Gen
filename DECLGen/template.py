@@ -15,28 +15,37 @@ def sanitize(raw_template: str) -> str:
     This method tries to correct these cases:
         sanitize("[R1]CCC") -> "C[R1]CC"
     """
-    if raw_template.startswith("[R"):
-        atom_pos = None
-        atom_length = None
+    if raw_template.find(".") >= 0:
+        template_parts = raw_template.split(".")
+        template_parts_sanitized = []
+        for part in template_parts:
+            part = sanitize(part)
+            template_parts_sanitized.append(part)
 
-        for atom in raw_template:
-            if atom in "CNO":
-                atom_pos = raw_template.find(atom)
+        raw_template = ".".join(template_parts_sanitized)
+    else:
+        if raw_template.startswith("[R"):
+            atom_pos = None
+            atom_length = None
 
-                if raw_template[atom_pos + 1] in "0123456789":
-                    atom_length = 2
-                else:
-                    atom_length = 1
+            for atom in raw_template:
+                if atom in "CNO":
+                    atom_pos = raw_template.find(atom)
 
-                break
+                    if raw_template[atom_pos + 1] in "0123456789":
+                        atom_length = 2
+                    else:
+                        atom_length = 1
 
-        raw_template = "{}({}){}".format(
-            raw_template[atom_pos:atom_pos + atom_length],
-            raw_template[0:atom_pos],
-            raw_template[atom_pos + atom_length:]
-        )
+                    break
 
-    raw_template = re.sub(r"\((\[R([0-9]+)\])\)", lambda x: x.group(1), raw_template)
+            raw_template = "{}({}){}".format(
+                raw_template[atom_pos:atom_pos + atom_length],
+                raw_template[0:atom_pos],
+                raw_template[atom_pos + atom_length:]
+            )
+
+        raw_template = re.sub(r"\((\[R([0-9]+)\])\)", lambda x: x.group(1), raw_template)
 
     return raw_template
 
@@ -47,7 +56,6 @@ def count_anchors(raw_template: str) -> int:
 
 def get_anchors(raw_template: str) -> List[str]:
     return ["R{}".format(x) for x in re.findall(_search_pattern, raw_template)]
-
 
 
 def _parse_callback(n) -> str:

@@ -1,11 +1,13 @@
-from typing import List, Set, Dict
-from operator import mul
+from typing import List, Set, Dict, Generator
+from operator import mul, itemgetter
 from functools import reduce
 from DECLGen.exceptions import \
     LibraryCategoryException, \
     LibraryCategoryExistsException, \
-    LibraryCategoryNotFoundException
+    LibraryCategoryNotFoundException, \
+    LibraryTemplateException
 from .categories import Category
+from DECLGen import template
 
 
 def _check_anchor(anchor) -> bool:
@@ -40,17 +42,34 @@ class Library:
         self.categories = {}
 
     def set_anchors(self, anchors: List[str]):
-        self.anchors = anchors
+        self.anchors = sorted(anchors)
+
+    def change_template(self, new_template: str):
+        # We must sanitize the template first in case the R group is at the beginning
+        template_string = template.sanitize(new_template)
+
+        raw_template = template_string
+        smiles_template = template.parse(template_string)
+        anchors = template.get_anchors(template_string)
+
+        if len(self.anchors) > 0 and sorted(anchors) != sorted(self.anchors):
+            raise LibraryTemplateException("Cannot change template with different anchors. You must remove the library first.")
+
+        self.storage.raw_template = raw_template
+        self.storage.smiles_template = smiles_template
 
     def describe(self) -> Dict[str, str]:
         description = {
             "Template": self.storage.raw_template,
             "R-Groups": ", ".join(self.anchors),
             "Library Shape": ", ".join([str(x) for x in self.shape]),
-            "Library Size": reduce(mul, self.shape, 1)
+            "Library Size": self.get_size()
         }
 
         return description
+
+    def get_size(self) -> int:
+        return reduce(mul, self.shape, 1)
 
     def has_category(self, id: str):
         if id in self.categories:
@@ -125,3 +144,27 @@ class Library:
         del self.categories[id]
 
         return True
+
+    def get_molecule_smiles_by_index(self, elements: Dict[str, int]) -> str:
+        fragments = []
+        for cat_id in elements:
+            fragments.append(self.categories[cat_id].get_element_by_index(elements[cat_id]).parsed_smiles)
+
+        fragments.append(self.storage.smiles_template)
+        smiles = ".".join(fragments)
+
+        return smiles
+
+    def generate_molecule_queue(self) -> List[Generator]:
+        categories_by_size = []
+        for cat_id in self.categories:
+            categories_by_size.append((len(self.categories[cat_id]), cat_id))
+
+        categories_by_size.sort()
+
+        queue = []
+        for element1 in range(categories_by_size[0][0]):
+            gen = ([categories_by_size[0][1], element1], categories_by_size[1:])
+            queue.append(gen)
+
+        return queue

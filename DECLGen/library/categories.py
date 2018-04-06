@@ -88,6 +88,25 @@ class Category:
         else:
             return False
 
+    def get_element(self, index: Union[str, int]) -> Element:
+        if type(index) == str:
+            index = codon.decode(index)
+
+        if not self.has_index(index):
+            raise LibraryElementNotFoundException(
+                "An element with the index <{index}> does not exist in category <{cat}>".format(
+                    index=index,
+                    cat=self.id
+                )
+            )
+
+        elm = self.elements[index]
+        return elm
+
+    def get_element_by_index(self, index) -> Element:
+        elm = list(self.elements.values())[index]
+        return elm
+
     def add_element(self, elm_smiles: str, index: Union[str, int] = None):
         if type(index) == str:
             index = codon.decode(index)
@@ -133,28 +152,20 @@ class Category:
 
         # Check if the exact same R-group is already contained
         # This has the flaw that C[R1]CC and CCC[R1] are regarded as being different.
-        if elm.smiles in self.element_smiles:
+        if elm.raw_smiles in self.element_smiles:
             print("Warning: The exact same R-Group is already contained in this category.")
 
         self.elements[index] = elm
-        self.element_smiles.append(elm.smiles)
+        self.element_smiles.append(elm.raw_smiles)
 
     def del_element(self, index: Union[str, int]):
-        if type(index) == str:
-            index = codon.decode(index)
+        """ Deletes an element from a diversity element category"""
+        elm = self.get_element(index)
 
-        if not self.has_index(index):
-            raise LibraryElementNotFoundException(
-                "An element with the index <{index}> does not exist in category <{cat}>".format(
-                    index=index,
-                    cat=self.id
-                )
-            )
-
-        elm = self.elements[index]
         del self.elements[index]
         try:
-            self.element_smiles.remove(elm.smiles)
+            self.element_smiles.remove(elm.raw_smiles)
+            del elm
         except ValueError:
             pass
 
