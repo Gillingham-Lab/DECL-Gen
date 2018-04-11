@@ -1,9 +1,10 @@
 import multiprocessing as mp
-from typing import List
+from typing import List, Dict, Iterable
 from csv import writer
 from DECLGen import Runtime
 from DECLGen.molecule import Molecule
 from DECLGen.exceptions import DECLException
+from DECLGen.library import Library
 
 
 def lib_info():
@@ -30,21 +31,25 @@ def lib_edit(
     r.save()
 
 
-def iterate_queue(library, queue):
+def iterate_queue(
+    library: Library,
+    data_fields: Dict[str, bool],
+    queue: Iterable
+) -> List:
     for item in queue:
-        yield [library, item]
+        yield [library, data_fields, item]
 
 
-def process_molecules(args) -> List[Molecule]:
-    library, item = args
+def process_molecules(args: List) -> List:
+    library, data_fields, item = args
     cat1, cats = item
 
     molecules = []
     for element_set in yield_helper(cat1, cats):
-        smiles = library.get_molecule_smiles_by_index(element_set)
+        smiles, codons = library.get_molecule_data_by_index(element_set)
         molecule = Molecule(smiles)
 
-        molecules.append(molecule)
+        molecules.append(codons + molecule.get_data(data_fields))
 
     return molecules
 
@@ -75,17 +80,24 @@ def lib_generate():
     """ Generates physicochemical properties of the library and saves them in library-properties.tsv"""
     r = Runtime()
 
-    queue = r.storage.library.generate_molecule_queue()
+    queue, elements = r.storage.library.generate_molecule_queue()
+
+    data_fields = {
+        "canonical_smiles": True
+    }
 
     with open("library-properties.csv", "w") as fh:
         csv_file = writer(fh)
+        csv_file.writerow(elements + Molecule.get_data_headers(data_fields))
 
         i = 0
         j = 0
         with mp.Pool(8) as pool:
-            for molecules in pool.imap_unordered(process_molecules, iterate_queue(r.storage.library, queue)):
+            for molecules in pool.imap_unordered(process_molecules, iterate_queue(r.storage.library, data_fields, queue)):
                 i += len(molecules)
                 j += 1
+                for molecule in molecules:
+                    csv_file.writerow(molecule)
 
     print("Number of jobs: ", j)
     print("Number of molecules generated: ", i)

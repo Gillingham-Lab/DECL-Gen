@@ -109,7 +109,10 @@ class Category:
 
     def add_element(self, elm_smiles: str, index: Union[str, int] = None):
         if type(index) == str:
+            old_index = index
             index = codon.decode(index)
+        else:
+            old_index = None
         if index is None:
             if len(self.elements) > 0:
                 index = max(list(self.elements.keys()))+1
@@ -153,7 +156,14 @@ class Category:
         # Check if the exact same R-group is already contained
         # This has the flaw that C[R1]CC and CCC[R1] are regarded as being different.
         if elm.raw_smiles in self.element_smiles:
-            print("Warning: The exact same R-Group is already contained in this category.")
+            print("Warning: The exact same element is already contained in this category ({id}, {dna}, {smiles}).".format(
+                id=index,
+                dna=old_index,
+                smiles=elm_smiles
+            ))
+            for k in self.elements:
+                if self.elements[k].raw_smiles == elm.raw_smiles:
+                    print("Other item at ", self.elements[k].index, codon.encode(self.elements[k].index, self.codon_length))
 
         self.elements[index] = elm
         self.element_smiles.append(elm.raw_smiles)

@@ -11,6 +11,7 @@ class Element:
 
     def __init__(self, cat, smiles: str, index: int):
         self.cat = cat
+        self.user_smiles = smiles
         self.raw_smiles = template.sanitize(smiles)
         self.parsed_smiles = template.parse(self.raw_smiles)
 

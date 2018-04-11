@@ -1,4 +1,4 @@
-from typing import List, Set, Dict, Generator
+from typing import List, Set, Dict, Generator, Tuple
 from operator import mul, itemgetter
 from functools import reduce
 from DECLGen.exceptions import \
@@ -145,17 +145,20 @@ class Library:
 
         return True
 
-    def get_molecule_smiles_by_index(self, elements: Dict[str, int]) -> str:
+    def get_molecule_data_by_index(self, elements: Dict[str, int]) -> str:
         fragments = []
+        codons = []
         for cat_id in elements:
             fragments.append(self.categories[cat_id].get_element_by_index(elements[cat_id]).parsed_smiles)
+            codons.append(self.categories[cat_id].get_element_by_index(elements[cat_id]).codon)
 
         fragments.append(self.storage.smiles_template)
         smiles = ".".join(fragments)
 
-        return smiles
+        return smiles, codons
 
-    def generate_molecule_queue(self) -> List[Generator]:
+
+    def generate_molecule_queue(self) -> Tuple[list, list]:
         categories_by_size = []
         for cat_id in self.categories:
             categories_by_size.append((len(self.categories[cat_id]), cat_id))
@@ -167,4 +170,4 @@ class Library:
             gen = ([categories_by_size[0][1], element1], categories_by_size[1:])
             queue.append(gen)
 
-        return queue
+        return queue, categories_by_size

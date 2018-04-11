@@ -1,5 +1,5 @@
 class CodonConfig:
-    bases = "ATCG"
+    bases = "ATGC"
 
 
 bases = CodonConfig.bases
