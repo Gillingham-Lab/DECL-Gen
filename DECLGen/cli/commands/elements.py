@@ -13,7 +13,7 @@ def elm_list(id: "Category identifier"):
 
         print("{t.bold}{a}\t{b}\t{c}{t.normal}".format(a="index", b="codon", c="smiles", t=r.t))
         for element in cat:
-            print("{}\t{}\t{}".format(element.index, element.codon, element.smiles))
+            print("{}\t{}\t{}".format(element.index, element.codon, element.raw_smiles))
     except DECLException as e:
         r.error_exit(e)
 

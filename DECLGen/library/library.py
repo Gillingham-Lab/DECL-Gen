@@ -87,11 +87,11 @@ class Library:
         return self.categories[id]
 
     @property
-    def shape(self) -> Set[int]:
+    def shape(self) -> Tuple[int]:
         shape = []
         for cat in self.categories.values():
             shape.append(len(cat))
-        return set(shape)
+        return tuple(shape)
 
     def add_category(self, id: str, name: str, anchors: List[str], codon_length: int = 0) -> bool:
         """
@@ -170,4 +170,4 @@ class Library:
             gen = ([categories_by_size[0][1], element1], categories_by_size[1:])
             queue.append(gen)
 
-        return queue, categories_by_size
+        return queue, [x[1] for x in categories_by_size]

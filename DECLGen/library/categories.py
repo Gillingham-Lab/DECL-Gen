@@ -89,6 +89,11 @@ class Category:
             return False
 
     def get_element(self, index: Union[str, int]) -> Element:
+        try:
+            index = int(index)
+        except ValueError:
+            pass
+
         if type(index) == str:
             index = codon.decode(index)
 
@@ -172,7 +177,7 @@ class Category:
         """ Deletes an element from a diversity element category"""
         elm = self.get_element(index)
 
-        del self.elements[index]
+        del self.elements[elm.index]
         try:
             self.element_smiles.remove(elm.raw_smiles)
             del elm

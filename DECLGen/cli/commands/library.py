@@ -76,14 +76,47 @@ def yield_helper(cat1, cats):
         yield elements
 
 
-def lib_generate():
+def lib_generate(
+    threads: "Number of threads" = 1,
+    all: "Include all possible data" = False,
+    mw: "Include molecular weight" = False,
+    qed: "Quantitative estimation of drug-like properties" = False,
+    tpsa: "Topological polar surface area" = False,
+    tpsapermw: "Topological polar surface area per Da" = False,
+    alogp: "MolLogP" = False,
+    hdonors: "Number of H donors" = False,
+    hacceptors: "Number of H acceptors" = False,
+    nhetero: "Number of hetero atoms" = False,
+    rotatable: "Number of rotatable bonds" = False,
+    no: "Number of N and O" = False,
+    nhoh: "Number of NH and OH" = False,
+    rings: "Number of rings" = False,
+    maxRingSize: "Maximum ring size" = False,
+    csp3: "Fraction of C atoms that are sp3" = False,
+    heavyAtoms: "Number of heavy (non-hydrogen) atoms" = False,
+):
     """ Generates physicochemical properties of the library and saves them in library-properties.tsv"""
     r = Runtime()
 
     queue, elements = r.storage.library.generate_molecule_queue()
 
     data_fields = {
-        "canonical_smiles": True
+        "canonical_smiles": True,
+        "mw": mw if all is False else True,
+        "qed": qed if all is False else True,
+        "tpsa": tpsa if all is False else True,
+        "tpsapermw": tpsapermw if all is False else True,
+        "alogp": alogp if all is False else True,
+        "hdonors": hdonors if all is False else True,
+        "hacceptors": hacceptors if all is False else True,
+        "nhetero": nhetero if all is False else True,
+        "rotatable": rotatable if all is False else True,
+        "no": no if all is False else True,
+        "nhoh": nhoh if all is False else True,
+        "rings": rings if all is False else True,
+        "maxRingSize": maxRingSize if all is False else True,
+        "csp3": csp3 if all is False else True,
+        "heavyAtoms": heavyAtoms if all is False else True,
     }
 
     with open("library-properties.csv", "w") as fh:
