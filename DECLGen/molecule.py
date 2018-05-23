@@ -87,7 +87,7 @@ class Molecule:
     @property_title("RingCount")
     def rings(self) -> Union[int, float]:
         ringInfo = self._mol.GetRingInfo()
-        return len(ringInfo)
+        return len(ringInfo.AtomRings())
 
     @property_title("BiggestRingSize")
     def maxRingSize(self) -> Union[int, float]:
