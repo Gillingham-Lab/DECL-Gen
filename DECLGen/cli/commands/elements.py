@@ -43,7 +43,7 @@ def elm_add(
             cat.add_element(elm_smiles, index)
         except LibraryElementExistsException:
             if not force_yes:
-                print(r.t.red("Warning: ") + "This will overwrite the existing element.")
+                print("{t.red}Warning:{t.normal} This will overwrite the existing element.".format(t=r.t))
 
                 while True:
                     answer = input("Proceed anyway (Y/n)? ")
