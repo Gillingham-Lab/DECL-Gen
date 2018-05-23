@@ -86,14 +86,14 @@ class Molecule:
 
     @property_title("RingCount")
     def rings(self) -> Union[int, float]:
-        ringInfo = self._mol.GetRingInfo()
-        return len(ringInfo.AtomRings())
+        ringInfo = self._mol.GetRingInfo().AtomRings()
+        return len(ringInfo)
 
     @property_title("BiggestRingSize")
     def maxRingSize(self) -> Union[int, float]:
-        ringInfo = self._mol.GetRingInfo()
+        ringInfo = self._mol.GetRingInfo().AtomRings()
         if len(ringInfo) > 0:
-            return max([len(t) for t in ringInfo.AtomRings()])
+            return max([len(t) for t in ringInfo])
         else:
             return 0
 
