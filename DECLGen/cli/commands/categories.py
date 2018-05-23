@@ -78,7 +78,7 @@ def cat_add(
         r.storage.library.add_category(id, name, anchors, codon_length)
     except LibraryCategoryExistsException:
         if not force_yes:
-            print(r.t.red("Warning: ") + "This will overwrite the existing DEC and delete all saved DE.")
+            print("{t.red}Warning:{t.normal} This will overwrite the existing DEC and delete all saved DE.".format(t=r.t))
             print("If you want to edit some parts, use {exec} DEC-edit instead.".format(exec=sys.argv[0]))
 
             while True:

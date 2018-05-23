@@ -1,10 +1,10 @@
 import os
 import sys
-from blessings import Terminal
 from pickle import dump, load
 from .storage import Storage
 from .codon import CodonConfig
 from .exceptions import DECLException, LibraryExistsError, LibraryNotInitializedError
+from .terminal import Terminal
 
 
 class Runtime:

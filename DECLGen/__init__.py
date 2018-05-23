@@ -2,6 +2,7 @@ from .runtime import Runtime
 from .storage import Storage
 from . import template
 from .exceptions import *
+from .terminal import Terminal
 
 DECLGen_meta = dict(
     name="DECL-Gen",

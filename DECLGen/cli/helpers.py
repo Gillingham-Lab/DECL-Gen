@@ -1,6 +1,5 @@
 import math
 import time
-from blessings import Terminal
 
 
 class ProgressBar:
@@ -8,7 +7,7 @@ class ProgressBar:
     location = None
     width = None
 
-    def __init__(self, terminal: Terminal, location = None):
+    def __init__(self, terminal, location = None):
         self.term = terminal
         if location is None:
             location = (0, terminal.height - 1)

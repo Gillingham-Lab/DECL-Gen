@@ -94,11 +94,10 @@ def elm_import(
         cat = r.storage.library.get_category(id)
         print("Importing...")
 
-        with r.t.location():
-            progressBar = ProgressBar(r.t)
-            progressBar.start()
-            imported = cat.import_elements(filename, updateable=progressBar)
-            progressBar.finish()
+        progressBar = ProgressBar(r.t)
+        progressBar.start()
+        imported = cat.import_elements(filename, updateable=progressBar)
+        progressBar.finish()
 
         print("Added {} compounds".format(imported))
     except DECLException as e:

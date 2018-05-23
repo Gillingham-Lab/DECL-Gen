@@ -99,12 +99,7 @@ dependencies:
     - bidict==0.17.2
     - blessings==1.6.1
     - click==6.7
-    - daemonocle==1.0.1
-    - inotify-simple==1.1.7
-    - onedrived==2.0.0
-    - onedrivesdk==1.1.8
     - seaborn==0.8.1
-    - smilly==0.1.dev0
     - tabulate==0.8.2
     - zgitignore==0.8.0
 prefix: /home/sauterb/anaconda3/envs/chemistry
