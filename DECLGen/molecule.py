@@ -86,12 +86,16 @@ class Molecule:
 
     @property_title("RingCount")
     def rings(self) -> Union[int, float]:
-        return Crippen.MolLogP(self._mol)
+        ringInfo = self._mol.GetRingInfo()
+        return len(ringInfo)
 
     @property_title("BiggestRingSize")
     def maxRingSize(self) -> Union[int, float]:
         ringInfo = self._mol.GetRingInfo()
-        return max([len(t) for t in ringInfo.AtomRings()])
+        if len(ringInfo) > 0:
+            return max([len(t) for t in ringInfo.AtomRings()])
+        else:
+            return 0
 
     @property_title("FractionCsp3")
     def csp3(self) -> Union[int, float]:
