@@ -18,6 +18,7 @@ def lib_info():
 
 def lib_edit(
     template: "New Template" = None,
+    dna_template: "DNA Template. Use {catId} as placeholders to specify where the codon of the category should get included." = None,
 ):
     """ Allows editing of common library features, such as template. """
     r = Runtime()
@@ -25,6 +26,9 @@ def lib_edit(
     try:
         if template is not None:
             r.storage.library.change_template(template)
+
+        if dna_template is not None:
+            r.storage.library.change_dna_template(dna_template)
     except DECLException as e:
         r.error_exit(e)
 
@@ -44,12 +48,25 @@ def process_molecules(args: List) -> List:
     library, data_fields, item = args
     cat1, cats = item
 
+    dna_template = library.get_dna_template()
+
     molecules = []
     for element_set in yield_helper(cat1, cats):
+        keys = list(element_set.keys())
         smiles, codons = library.get_molecule_data_by_index(element_set)
         molecule = Molecule(smiles)
 
-        molecules.append(codons + molecule.get_data(data_fields))
+        dna_parts = {keys[x]: codons[x] for x in range(len(keys))}
+
+        try:
+            if dna_template is not None:
+                dna = library.get_formatted_dna_template(dna_parts)
+            else:
+                dna = ""
+        except KeyError:
+            raise Exception("Generation of DNA strand was not possible; Please check if all {catId} in the dna strand exist within the library.")
+
+        molecules.append(codons + [dna] + molecule.get_data(data_fields))
 
     return molecules
 
@@ -83,7 +100,7 @@ def lib_generate(
     qed: "Quantitative estimation of drug-like properties" = False,
     tpsa: "Topological polar surface area" = False,
     tpsapermw: "Topological polar surface area per Da" = False,
-    alogp: "MolLogP" = False,
+    alogp: "aLogP" = False,
     hdonors: "Number of H donors" = False,
     hacceptors: "Number of H acceptors" = False,
     nhetero: "Number of hetero atoms" = False,
@@ -121,16 +138,19 @@ def lib_generate(
 
     with open("library-properties.csv", "w") as fh:
         csv_file = writer(fh)
-        csv_file.writerow(elements + Molecule.get_data_headers(data_fields))
+        csv_file.writerow(elements + ["DNA"] + Molecule.get_data_headers(data_fields))
 
         i = 0
         j = 0
         with mp.Pool(threads) as pool:
-            for molecules in pool.imap_unordered(process_molecules, iterate_queue(r.storage.library, data_fields, queue)):
-                i += len(molecules)
-                j += 1
-                for molecule in molecules:
-                    csv_file.writerow(molecule)
+            try:
+                for molecules in pool.imap_unordered(process_molecules, iterate_queue(r.storage.library, data_fields, queue)):
+                    i += len(molecules)
+                    j += 1
+                    for molecule in molecules:
+                        csv_file.writerow(molecule)
+            except Exception as e:
+                print("{t.red}Error!\n{e}{t.normal}\n".format(e=e,t=r.t))
 
     print("Number of jobs: ", j)
     print("Number of molecules generated: ", i)

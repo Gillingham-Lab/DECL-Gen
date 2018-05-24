@@ -53,9 +53,9 @@ class Category:
         if self.codon_length > 0:
             return self.codon_length
         else:
-            return int(math.ceil(
+            return max(1, int(math.ceil(
                 math.log(max(1, len(self.elements)), len(codon.CodonConfig.bases))
-            ))
+            )))
 
     def get_max_elements(self) -> int:
         """ Returns the maximum amount of elements available for the current set codon size """

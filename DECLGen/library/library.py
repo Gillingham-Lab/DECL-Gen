@@ -1,4 +1,4 @@
-from typing import List, Set, Dict, Generator, Tuple
+from typing import List, Set, Dict, Generator, Tuple, Union
 from operator import mul, itemgetter
 from functools import reduce
 from DECLGen.exceptions import \
@@ -34,6 +34,7 @@ class Library:
     anchors = None
     anchors_in_use = None
     categories = None
+    dna_template = None
 
     def __init__(self, storage):
         self.storage = storage
@@ -44,7 +45,7 @@ class Library:
     def set_anchors(self, anchors: List[str]):
         self.anchors = sorted(anchors)
 
-    def change_template(self, new_template: str):
+    def change_template(self, new_template: str) -> None:
         # We must sanitize the template first in case the R group is at the beginning
         template_string = template.sanitize(new_template)
 
@@ -57,6 +58,17 @@ class Library:
 
         self.storage.raw_template = raw_template
         self.storage.smiles_template = smiles_template
+
+    def change_dna_template(self, dna_template: str) -> None:
+        """ Changes the DNA template of the library. {catId} can be used as a placeholders."""
+        self.dna_template = dna_template
+
+    def get_dna_template(self) -> Union[str, None]:
+        """ Returns the DNA template if set. """
+        return self.dna_template
+
+    def get_formatted_dna_template(self, codon: Dict[str, str]) -> Union[str, None]:
+        return self.dna_template.format(**codon)
 
     def describe(self) -> Dict[str, str]:
         description = {
@@ -156,7 +168,6 @@ class Library:
         smiles = ".".join(fragments)
 
         return smiles, codons
-
 
     def generate_molecule_queue(self) -> Tuple[list, list]:
         categories_by_size = []
