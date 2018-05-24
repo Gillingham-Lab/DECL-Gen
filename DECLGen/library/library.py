@@ -149,8 +149,8 @@ class Library:
         fragments = []
         codons = []
         for cat_id in elements:
-            fragments.append(self.categories[cat_id].get_element_by_index(elements[cat_id]).parsed_smiles)
-            codons.append(self.categories[cat_id].get_element_by_index(elements[cat_id]).codon)
+            fragments.append(self.categories[cat_id]._get_element_by_list_index(elements[cat_id]).parsed_smiles)
+            codons.append(self.categories[cat_id]._get_element_by_list_index(elements[cat_id]).codon)
 
         fragments.append(self.storage.smiles_template)
         smiles = ".".join(fragments)

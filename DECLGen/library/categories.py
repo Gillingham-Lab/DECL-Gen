@@ -17,6 +17,7 @@ class Category:
     anchors = None
     codon_length = None
     elements = None
+    reverse_complement = None
 
     def __init__(self, id: str, name: str, anchors: List[str], codon_length: int = 0):
         self.id = id
@@ -33,12 +34,15 @@ class Category:
         return len(self.elements)
 
     def get_anchors(self):
+        """ Returns all anchors required within this category. """
         return self.anchors
 
     def set_name(self, name: str) -> None:
+        """ Sets the descriptive name of this category """
         self.name = name
 
     def set_codon_length(self, codon_length: int = 0) -> None:
+        """ Sets the maximum codon length. Setting to 0 makes the codon flexible."""
         if codon_length < 0:
             raise LibraryCategoryException("Codon length must be a positive integer.")
 
@@ -60,11 +64,24 @@ class Category:
         else:
             return len(codon.CodonConfig.bases)**self.codon_length
 
+    def set_reverse_complement(self, reverse_complement: bool) -> None:
+        """ Sets whether this category's codon is reverse complement or not. """
+        self.reverse_complement = reverse_complement
+
+    def is_reverse_complement(self) -> bool:
+        """ Returns true of this category's codon is to be reverse complemented. """
+        if self.reverse_complement is True:
+            return True
+        else:
+            return False
+
     def clear(self):
+        """ Removes all elements from the category. """
         self.elements = {}
         self.element_smiles = []
 
     def describe(self) -> Dict[str, str]:
+        """ Returns a description of the category. """
         description = {
             "id": self.id,
             "name": self.name,
@@ -72,6 +89,7 @@ class Category:
             "codon_length": "variable" if self.codon_length == 0 else str(self.codon_length),
             "elements": len(self.elements),
             "max_elements": "unlimited" if self.codon_length == 0 else str(self.get_max_elements()),
+            "reverse_complement": "Yes" if self.is_reverse_complement() else "No",
         }
 
         if self.codon_length == 0:
@@ -80,6 +98,7 @@ class Category:
         return description
 
     def has_index(self, index: Union[str, int]):
+        """ Returns true if an index is already in use. """
         if type(index) == str:
             index = codon.decode(index)
 
@@ -89,6 +108,7 @@ class Category:
             return False
 
     def get_element(self, index: Union[str, int]) -> Element:
+        """ Returns an element with a given index. """
         try:
             index = int(index)
         except ValueError:
@@ -108,11 +128,14 @@ class Category:
         elm = self.elements[index]
         return elm
 
-    def get_element_by_index(self, index) -> Element:
-        elm = list(self.elements.values())[index]
+    def _get_element_by_list_index(self, list_index) -> Element:
+        """ Internal helper method to access elements with an enumerated index. """
+        elm = list(self.elements.values())[list_index]
         return elm
 
     def add_element(self, elm_smiles: str, index: Union[str, int] = None):
+        """ Adds an element by providing a smiles and optionally an index. If the index is not given,
+        DECL-Gen tries to automatically generate one. """
         if type(index) == str:
             old_index = index
             index = codon.decode(index)
@@ -185,6 +208,7 @@ class Category:
             pass
 
     def import_elements(self, filename: str, updateable = None) -> int:
+        """ Imports elements from a tab separated file. """
         if not os.path.exists(filename):
             raise LibraryElementException("The file <{}> does not exist.".format(filename))
 
