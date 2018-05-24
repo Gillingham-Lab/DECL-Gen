@@ -125,7 +125,7 @@ def lib_generate(
 
         i = 0
         j = 0
-        with mp.Pool(8) as pool:
+        with mp.Pool(threads) as pool:
             for molecules in pool.imap_unordered(process_molecules, iterate_queue(r.storage.library, data_fields, queue)):
                 i += len(molecules)
                 j += 1
