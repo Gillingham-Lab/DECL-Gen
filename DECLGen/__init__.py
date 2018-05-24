@@ -7,11 +7,12 @@ from .terminal import Terminal
 DECLGen_meta = dict(
     name="DECL-Gen",
     version="v1.0-alpha",
-    description="A tool to generate DNA encoded libraries from fragments",
+    description="A tool to generate DNA encoded compound library from fragments and calculate their properties.",
     url="https://github.com/Gillingham-Lab/DECL-Gen",
 
     author="Basilius Sauter",
     author_email="basilius.sauter@unibas.ch",
+    year="2018",
 
     install_requires=[
         "argh",

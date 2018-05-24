@@ -20,6 +20,7 @@ setup(
     author="Basilius Sauter",
     author_email="basilius.sauter@unibas.ch",
 
+    python_requires='>3.6.0',
     packages=find_packages(),
     install_requires=[
         "argh",
