@@ -69,6 +69,7 @@ def cat_add(
     name: "A human-readable name for this category",
     anchors: "A list of R-Groups that MUST elements for this category must have",
     codon_length: "The desired length of the codon. Codon length is flexible if not given or if set to 0." = 0,
+    reverse_complement: "Set to 1 if the codon should be put as its reverse complement into the DNA" = 0,
     force_yes: "Set to true if answers should be assumed to be yes" = False,
 ) -> None:
     """ Adds a new diversity element category """
@@ -76,6 +77,7 @@ def cat_add(
 
     try:
         r.storage.library.add_category(id, name, anchors, codon_length)
+        r.storage.library.get_category(id).set_reverse_complement(True if reverse_complement is 1 else False)
     except LibraryCategoryExistsException:
         if not force_yes:
             print("{t.red}Warning:{t.normal} This will overwrite the existing DEC and delete all saved DE.".format(t=r.t))
