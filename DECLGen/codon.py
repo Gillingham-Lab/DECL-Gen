@@ -5,6 +5,15 @@ class CodonConfig:
 bases = CodonConfig.bases
 
 
+def reverse(codon: str) -> str:
+    codon = codon.upper()
+    codon = codon.replace("A", "t")
+    codon = codon.replace("C", "g")
+    codon = codon.replace("G", "c")
+    codon = codon.replace("T", "a")
+    return codon.upper()[::-1]
+
+
 def encode(n: int, length: int) -> str:
     """
     Encodes a number as a codon.

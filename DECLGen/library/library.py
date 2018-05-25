@@ -7,7 +7,7 @@ from DECLGen.exceptions import \
     LibraryCategoryNotFoundException, \
     LibraryTemplateException
 from .categories import Category
-from DECLGen import template
+from DECLGen import template, codon
 
 
 def _check_anchor(anchor) -> bool:
@@ -67,8 +67,16 @@ class Library:
         """ Returns the DNA template if set. """
         return self.dna_template
 
-    def get_formatted_dna_template(self, codon: Dict[str, str]) -> Union[str, None]:
-        return self.dna_template.format(**codon)
+    def get_formatted_dna_template(self, codon_list: Dict[str, str]) -> Union[str, None]:
+        for catId in codon_list.keys():
+            if self.has_category(catId) is False:
+                raise KeyError("Unknown category id ({})".format(catId))
+
+            cat = self.get_category(catId)
+            if cat.is_reverse_complement():
+                codon_list[catId] = codon.reverse(codon_list[catId])
+
+        return self.dna_template.format(**codon_list)
 
     def describe(self) -> Dict[str, str]:
         description = {

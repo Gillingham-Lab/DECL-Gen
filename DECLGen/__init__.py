@@ -3,6 +3,7 @@ from .storage import Storage
 from . import template
 from .exceptions import *
 from .terminal import Terminal
+from . import codon
 
 DECLGen_meta = dict(
     name="DECL-Gen",
