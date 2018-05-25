@@ -118,7 +118,7 @@ def cat_edit(
     id: "Category identifier",
     name: "A human-readable name for this category" = None,
     codon_length: "The desired length of the codon. Codon length is flexible if not given or if set to 0." = None,
-    reverse_complement: "Set to 1 if the codon should be put as its reverse complement into the DNA" = 0,
+    reverse_complement: "Set to 1 if the codon should be put as its reverse complement into the DNA and 0 if not." = -1,
 ) -> None:
     """ Changes some available parameters for a diversity element category """
     r = Runtime()
@@ -131,7 +131,8 @@ def cat_edit(
         if codon_length is not None:
             cat.set_codon_length(int(codon_length))
 
-        cat.set_reverse_complement(True if reverse_complement == 1 else False)
+        if reverse_complement > 0:
+            cat.set_reverse_complement(True if reverse_complement >= 1 else False)
     except DECLException as e:
         r.error_exit(e)
 
