@@ -13,7 +13,8 @@ def lib_info():
 
     description = r.storage.library.describe()
     for key in description:
-        print("{t.bold}{key:<15}{t.normal} {value}".format(t=r.t, key=key + ":", value=description[key]))
+        if description[key] is not None:
+            print("{t.bold}{key:<15}{t.normal} {value}".format(t=r.t, key=key + ":", value=description[key]))
 
 
 def lib_edit(

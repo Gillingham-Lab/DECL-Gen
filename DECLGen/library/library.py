@@ -78,12 +78,13 @@ class Library:
 
         return self.dna_template.format(**codon_list)
 
-    def describe(self) -> Dict[str, str]:
+    def describe(self) -> Dict[str, Union[str, None]]:
         description = {
             "Template": self.storage.raw_template,
+            "DNA-Template": self.get_dna_template(),
             "R-Groups": ", ".join(self.anchors),
             "Library Shape": ", ".join([str(x) for x in self.shape]),
-            "Library Size": self.get_size()
+            "Library Size": self.get_size(),
         }
 
         return description
