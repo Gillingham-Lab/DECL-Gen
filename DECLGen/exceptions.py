@@ -16,6 +16,10 @@ class LibraryTemplateException(DECLException):
     exitcode = 10
 
 
+class LibraryNoDNATemplateException(LibraryTemplateException):
+    exitcode = 11
+
+
 class LibraryCategoryException(DECLException):
     exitcode = 20
 
@@ -42,4 +46,3 @@ class LibraryElementNotFoundException(LibraryCategoryException):
 
 class LibraryElementExistsException(LibraryCategoryException):
     exitcode = 33
-

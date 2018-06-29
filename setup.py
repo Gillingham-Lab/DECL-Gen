@@ -28,7 +28,8 @@ setup(
 
     entry_points={
         "console_scripts": [
-            'declGen=DECLGen.cli.main:main',
+            'declGen=DECLGen.cli.generate:main',
+            'declEval=DECLGen.cli.evaluate:main',
         ]
     }
 )
