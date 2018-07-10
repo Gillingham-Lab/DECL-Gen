@@ -14,7 +14,7 @@ from DECLGen.exceptions import \
     EvaluationException
 from .categories import Category
 from DECLGen import template, codon
-from DECLGen.evaluation import AlignmentResult
+from DECLGen.evaluation import AlignmentResult, extract_codon
 
 
 def _check_anchor(anchor) -> bool:
@@ -335,17 +335,6 @@ def read_processor(args):
     r1, r1_template, n_positions_r1, r1_results = r1
     r2, r2_template, n_positions_r2, r2_results = r2
 
-    result = {
-        "reads_processed": 0,
-        "reads_useful": 0,
-        "valid_pairs": 0,
-        "invalid_pairs": 0,
-        "low_quality_skips": 0,
-        "both_low_quality_skips": 0,
-        "r1_low_quality_skips": 0,
-        "r2_low_quality_skips": 0,
-        "codons": {},
-    }
     result = AlignmentResult(paired=False if r2 is None else True)
     print(result._paired)
 
@@ -353,23 +342,9 @@ def read_processor(args):
         result["reads_processed"] += 1
 
         # Extract codons from first read
-        codons_1 = []
-        for positions in n_positions_r1:
-            codon = read_1.seq[positions[0]:positions[1]]
-            if r1_results == "forward":
-                codons_1.append(codon)
-            else:
-                codons_1.append(codon.reverse_complement())
-
-        # Extract codons from second read
+        codons_1 = extract_codon(read_1.seq, n_positions_r1, r1_results != "forward")
         if read_2 is not None:
-            codons_2 = []
-            for positions in n_positions_r2:
-                codon = read_2.seq[positions[0]:positions[1]]
-                if r2_results == "forward":
-                    codons_2.append(codon)
-                else:
-                    codons_2.append(codon.reverse_complement())
+            codons_2 = extract_codon(read_2.seq, n_positions_r2, r2_results != "forward")
 
         # Invert codon sequence for the backwards one
         if r1_results == "forward":

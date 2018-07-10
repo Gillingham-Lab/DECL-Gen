@@ -1,3 +1,18 @@
+from typing import List, Tuple
+from Bio.Seq import Seq
+
+def extract_codon(read: Seq, coordinates: List[Tuple[int, int]], invert=False) -> List[str]:
+    codons = []
+    for start, stop in coordinates:
+        codon = read[start:stop]
+
+        if invert is True:
+            codons.append(str(codon.reverse_complement()))
+        else:
+            codons.append(str(codon))
+
+    return codons
+
 
 class AlignmentResult():
     """ Represents the result of codon alignment. """
@@ -43,7 +58,7 @@ class AlignmentResult():
         self._result[item] = value
 
     def __add__(self, othr):
-        r = Result()
+        r = self.__class__()
         # Add result meta
         for key in self._result:
             r[key] = self[key] + othr[key]
