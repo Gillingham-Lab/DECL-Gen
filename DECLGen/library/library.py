@@ -242,13 +242,13 @@ class Library:
             r2_results = "forward"
 
         r1 = (r1, r1_template, n_positions_r1, r1_results)
-        r2 = (r2, r2_template, n_positions_r2, r2_results) if r2 is not None else None
+        r2 = (r2, r2_template, n_positions_r2, r2_results) if r2 is not None else (None, None, None, None)
 
         all_results = None
 
         def read_loader(r1, r2, compare_n, blocksize, checktype):
             reads_1 = SeqIO.parse(r1[0], "fastq-illumina")
-            reads_2 = SeqIO.parse(r2[0], "fastq-illumina") if r2 is not None else None
+            reads_2 = SeqIO.parse(r2[0], "fastq-illumina") if r2[0] is not None else None
 
             read_buffer = []
 
@@ -336,7 +336,6 @@ def read_processor(args):
     r2, r2_template, n_positions_r2, r2_results = r2
 
     result = AlignmentResult(paired=False if r2 is None else True)
-    print(result._paired)
 
     for read_1, read_2 in read_buffer:
         result["reads_processed"] += 1

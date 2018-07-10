@@ -77,15 +77,14 @@ class AlignmentResult():
     def __str__(self):
         ret = []
 
-        if self._paired:
-            for key in self._result:
-                annotation = self._key_annotations[key]
-                value = self._result[key]
+        for key in self._result:
+            annotation = self._key_annotations[key]
+            value = self._result[key]
 
-                if self._paired and annotation[1] in ["both", "paired"]:
-                    ret.append("{0:<30} {1}".format(annotation[0], value))
-                elif self._paired and annotation[1] in ["both", "single"]:
-                    ret.append("{0:<30} {1}".format(annotation[0], value))
+            if self._paired is True and annotation[1] in ["both", "paired"]:
+                ret.append("{0:<30} {1}".format(annotation[0], value))
+            elif self._paired is False and annotation[1] in ["both", "single"]:
+                ret.append("{0:<30} {1}".format(annotation[0], value))
 
         return "\n".join(ret)
 
