@@ -67,7 +67,7 @@ def process_molecules(args: List) -> List:
         except KeyError:
             raise Exception("Generation of DNA strand was not possible; Please check if all {catId} in the dna strand exist within the library.")
 
-        molecules.append(codons + [dna] + molecule.get_data(data_fields))
+        molecules.append([library.get_codon_summary_string(dna_parts)] + codons + [dna] + molecule.get_data(data_fields))
 
     return molecules
 
@@ -139,7 +139,7 @@ def lib_generate(
 
     with open("library-properties.csv", "w") as fh:
         csv_file = writer(fh)
-        csv_file.writerow(elements + ["DNA"] + Molecule.get_data_headers(data_fields))
+        csv_file.writerow(["Codon-Combination"] + elements + ["DNA"] + Molecule.get_data_headers(data_fields))
 
         i = 0
         j = 0
