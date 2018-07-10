@@ -14,6 +14,7 @@ from DECLGen.exceptions import \
     EvaluationException
 from .categories import Category
 from DECLGen import template, codon
+from DECLGen.evaluation import AlignmentResult
 
 
 def _check_anchor(anchor) -> bool:
@@ -243,17 +244,7 @@ class Library:
         r1 = (r1, r1_template, n_positions_r1, r1_results)
         r2 = (r2, r2_template, n_positions_r2, r2_results) if r2 is not None else None
 
-        all_results = {
-            "reads_processed": 0,
-            "reads_useful": 0,
-            "valid_pairs": 0,
-            "invalid_pairs": 0,
-            "low_quality_skips": 0,
-            "both_low_quality_skips": 0,
-            "r1_low_quality_skips": 0,
-            "r2_low_quality_skips": 0,
-            "codons": {},
-        }
+        all_results = None
 
         def read_loader(r1, r2, compare_n, blocksize, checktype):
             reads_1 = SeqIO.parse(r1[0], "fastq-illumina")
@@ -277,16 +268,10 @@ class Library:
         with mp.Pool(threads) as pool:
             for temp_result in pool.imap_unordered(read_processor, read_loader(r1, r2, compare_n, blocksize, checktype)):
                 # Do something with the result
-                for key in temp_result:
-                    if key == "codons":
-                        for codon_key in temp_result[key]:
-                            if codon_key not in all_results["codons"]:
-                                all_results["codons"][codon_key] = 0
-
-                            all_results["codons"][codon_key] += temp_result["codons"][codon_key]
-                    else:
-                        all_results[key] += temp_result[key]
-
+                if all_results is None:
+                    all_results = temp_result
+                else:
+                    all_results += temp_result
 
         return all_results
 
@@ -361,6 +346,8 @@ def read_processor(args):
         "r2_low_quality_skips": 0,
         "codons": {},
     }
+    result = AlignmentResult(paired=False if r2 is None else True)
+    print(result._paired)
 
     for read_1, read_2 in read_buffer:
         result["reads_processed"] += 1
@@ -499,8 +486,6 @@ def read_processor(args):
 
         result["reads_useful"] += 1
         codons_1 = tuple([str(x) for x in codons_1])
-        if codons_1 not in result["codons"]:
-            result["codons"][codons_1] = 0
-        result["codons"][codons_1] += 1
+        result.increase_codon(codons_1)
 
     return result

@@ -28,21 +28,12 @@ def align(
     with open(result_file, "w") as fh:
         fh.write("{0}\t{1}\n".format("Codon-Combination", "Count"))
 
-        for codon in result["codons"]:
-            fh.write("{0}\t{1}\n".format("-".join(codon), result["codons"][codon]))
+        codon_list = result.get_codons()
+        for codon in codon_list:
+            fh.write("{0}\t{1}\n".format("-".join(codon), codon_list[codon]))
 
     # Show log information
-    print("{0:<30} {1}".format("Reads processed", result["reads_processed"]))
-    print("{0:<30} {1}".format("Reads useful", result["reads_useful"]))
-
-    if r2 is None:
-        print("{0:<30} {1}".format("Low quality skips", result["low_quality_skips"]))
-    else:
-        print("{0:<30} {1}".format("Valid pairs", result["valid_pairs"]))
-        print("{0:<30} {1}".format("Invalid pairs", result["invalid_pairs"]))
-        print("{0:<30} {1}".format("Low quality skips (both)", result["both_low_quality_skips"]))
-        print("{0:<30} {1}".format("Low quality skips (r1)", result["r1_low_quality_skips"]))
-        print("{0:<30} {1}".format("Low quality skips (r2)", result["r2_low_quality_skips"]))
+    print(result)
 
     print("\nAll results have been saved into {}".format(result_file))
 
