@@ -1,6 +1,6 @@
 from .about import about
-from .align import align
+from .align import extract
 
 commands = [
-    about, align
+    about, extract
 ]

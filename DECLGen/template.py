@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import re
 import sys
 from rdkit import Chem
@@ -83,7 +83,7 @@ def is_valid(parsed: str, anchors: List[str]) -> bool:
         return True
 
 
-def get_codon_coordinates(template: Seq) -> List[Tuple[int, int]]:
+def get_codon_coordinates(template: Union[Seq, str]) -> List[Tuple[int, int]]:
     """
     Retrieves codon positions from a given template as a list of tuples with from-to coordinates. Codons must be
     indicated as N.

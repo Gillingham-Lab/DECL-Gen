@@ -15,14 +15,13 @@ from DECLGen.exceptions import \
 from .categories import Category
 from DECLGen import template, codon
 from DECLGen.evaluation import \
-    AlignmentResult, \
-    ReadfileMetadata, \
-    ReadfileType, \
-    ReadfileWorkerMetadata, \
-    extract_codon, \
     read_loader, \
-    read_processor
-
+    read_processor, \
+    qc
+from DECLGen.evaluation.metadata import \
+    ReadfileWorkerMetadata, \
+    ReadfileType, \
+    ReadfileMetadata
 
 def _check_anchor(anchor) -> bool:
     if not anchor.startswith("R"):
@@ -253,9 +252,15 @@ class Library:
 
         all_results = None
 
+        # Sanitize checktypes
+        if isinstance(checktype, str):
+            if checktype in qc.Type.all:
+                checktype = qc.Type.get(checktype)
+            else:
+                raise EvaluationException("Unknown method given ({}). Use one of {}.".format(checktype, ", ".join(qc.Type.all)))
+
         # Initialize Worker metadata
         worker_metadata = ReadfileWorkerMetadata(r1, r2, blocksize=blocksize, checktype=checktype, compare_n=compare_n)
-
 
         with mp.Pool(threads) as pool:
             for temp_result in pool.imap_unordered(read_processor, read_loader(worker_metadata)):
