@@ -14,7 +14,14 @@ from DECLGen.exceptions import \
     EvaluationException
 from .categories import Category
 from DECLGen import template, codon
-from DECLGen.evaluation import AlignmentResult, extract_codon
+from DECLGen.evaluation import \
+    AlignmentResult, \
+    ReadfileMetadata, \
+    ReadfileType, \
+    ReadfileWorkerMetadata, \
+    extract_codon, \
+    read_loader, \
+    read_processor
 
 
 def _check_anchor(anchor) -> bool:
@@ -229,44 +236,29 @@ class Library:
         template_f = Seq(self.get_formatted_stub_dna_template().upper(), alphabet=IUPAC.ambiguous_dna)
         template_r = template_f.reverse_complement()
 
-
         r1_template, r2_template = self._assign_template(template_f, template_r, r1, r2, n=compare_n)
-        n_positions_r1 = self._get_n_positions_on_template(r1_template)
-        n_positions_r2 = self._get_n_positions_on_template(r2_template)
+
+        n_positions_r1 = template.get_codon_coordinates(r1_template)
+        n_positions_r2 = template.get_codon_coordinates(r2_template)
 
         if r1_template == template_f:
-            r1_results = "forward"
-            r2_results = "reverse"
+            r1_results = ReadfileType.forward
+            r2_results = ReadfileType.reverse
         else:
-            r1_results = "reverse"
-            r2_results = "forward"
+            r1_results = ReadfileType.reverse
+            r2_results = ReadfileType.forward
 
-        r1 = (r1, r1_template, n_positions_r1, r1_results)
-        r2 = (r2, r2_template, n_positions_r2, r2_results) if r2 is not None else (None, None, None, None)
+        r1 = ReadfileMetadata(r1, r1_template, n_positions_r1, r1_results)
+        r2 = ReadfileMetadata(r2, r2_template, n_positions_r2, r2_results) if r2 is not None else None
 
         all_results = None
 
-        def read_loader(r1, r2, compare_n, blocksize, checktype):
-            reads_1 = SeqIO.parse(r1[0], "fastq-illumina")
-            reads_2 = SeqIO.parse(r2[0], "fastq-illumina") if r2[0] is not None else None
+        # Initialize Worker metadata
+        worker_metadata = ReadfileWorkerMetadata(r1, r2, blocksize=blocksize, checktype=checktype, compare_n=compare_n)
 
-            read_buffer = []
-
-            for read_1 in reads_1:
-                read_2 = next(reads_2) if reads_2 is not None else None
-
-                read_buffer.append((read_1, read_2))
-
-                # If we have enough reads, we yield the package to submit it to a thread.
-                if len(read_buffer) == blocksize:
-                    yield (read_buffer, r1, r2, compare_n, blocksize, checktype)
-                    read_buffer = []
-
-            # We yield everything now that's left over
-            yield (read_buffer, r1, r2, compare_n, blocksize, checktype)
 
         with mp.Pool(threads) as pool:
-            for temp_result in pool.imap_unordered(read_processor, read_loader(r1, r2, compare_n, blocksize, checktype)):
+            for temp_result in pool.imap_unordered(read_processor, read_loader(worker_metadata)):
                 # Do something with the result
                 if all_results is None:
                     all_results = temp_result
@@ -328,138 +320,3 @@ class Library:
         return positions
 
 
-def read_processor(args):
-    print("Start thread")
-    read_buffer, r1, r2, compare_n, blocksize, checktype = args
-
-    r1, r1_template, n_positions_r1, r1_results = r1
-    r2, r2_template, n_positions_r2, r2_results = r2
-
-    result = AlignmentResult(paired=False if r2 is None else True)
-
-    for read_1, read_2 in read_buffer:
-        result["reads_processed"] += 1
-
-        # Extract codons from first read
-        codons_1 = extract_codon(read_1.seq, n_positions_r1, r1_results != "forward")
-        if read_2 is not None:
-            codons_2 = extract_codon(read_2.seq, n_positions_r2, r2_results != "forward")
-
-        # Invert codon sequence for the backwards one
-        if r1_results == "forward":
-            if read_2 is not None:
-                codons_2 = codons_2[::-1]
-        else:
-            codons_1 = codons_1[::-1]
-
-        # Check pairs if they agree - if not, ignore.
-        if read_2 is not None:
-            if codons_1 == codons_2:
-                result["valid_pairs"] += 1
-            else:
-                result["invalid_pairs"] += 1
-                continue
-
-        if checktype == "simple":
-            if read_2 is not None:
-                if read_1.seq[0:compare_n] != r1_template[0:compare_n] and read_2.seq[0:compare_n] != r2_template[0:compare_n]:
-                    result["both_low_quality_skips"] += 1
-                    continue
-                elif read_1.seq[0:compare_n] != r1_template[0:compare_n]:
-                    result["r1_low_quality_skips"] += 1
-                    continue
-                elif read_2.seq[0:compare_n] != r2_template[0:compare_n]:
-                    result["r2_low_quality_skips"] += 1
-                    continue
-            elif read_1.seq[0:compare_n] != r1_template[0:compare_n]:
-                result["low_quality_skips"] += 1
-                continue
-
-            # Additional checks
-            r1_lowquality = False
-            r2_lowquality = False
-            for positions in n_positions_r1:
-                n = positions[1] - positions[0] + 1
-
-                if read_1.seq[positions[0]-n:positions[1]-n] != r1_template[positions[0]-n:positions[1]-n]:
-                    r1_lowquality = True
-
-                if read_1.seq[positions[0]+n:positions[1]+n] != r1_template[positions[0]+n:positions[1]+n]:
-                    r1_lowquality = True
-
-            if read_2 is not None:
-                for positions in n_positions_r2:
-                    n = positions[1] - positions[0] + 1
-
-                    if read_2.seq[positions[0]-n:positions[1]-n] != r2_template[positions[0]-n:positions[1]-n]:
-                        r2_lowquality = True
-
-                    if read_2.seq[positions[0]+n:positions[1]+n] != r2_template[positions[0]+n:positions[1]+n]:
-                        r2_lowquality = True
-
-            if read_2 is None:
-                if r1_lowquality:
-                    result["low_quality_skips"] += 1
-                    continue
-            else:
-                if r1_lowquality and r2_lowquality:
-                    result["both_low_quality_skips"] += 1
-                    continue
-                elif r1_lowquality:
-                    result["r1_low_quality_skips"] += 1
-                    continue
-                elif r2_lowquality:
-                    result["r2_low_quality_skips"] += 1
-                    continue
-        elif checktype == "pairwise_score":
-            # Alignment (potentially slower down)
-            score_1 = pairwise2.align.localms(read_1.seq, r1_template, 5, -3, -4, -4, score_only=True)
-            max_score_1 = min(len(read_1.seq), len(r1_template)) * 5 * 0.5
-
-            if read_2 is not None:
-                score_2 = pairwise2.align.localms(read_2.seq, r2_template, 5, -3, -4, -4,
-                                                  score_only=True)
-                max_score_2 = min(len(read_2.seq), len(r2_template)) * 5 * 0.5
-
-            if read_2 is not None:
-                if score_1 < max_score_1 and score_2 < max_score_2:
-                    result["both_low_quality_skips"] += 1
-                    continue
-                elif score_1 < max_score_1:
-                    result["r1_low_quality_skips"] += 1
-                    continue
-                elif score_2 < max_score_2:
-                    result["r2_low_quality_skips"] += 1
-                    continue
-            else:
-                if score_1 < max_score_1:
-                    result["low_quality_skips"] += 1
-                    continue
-        elif checktype == "pairwise_complex":
-            n1 = min(len(read_1.seq), len(r1_template))
-            alignment_1 = pairwise2.align.localms(read_1.seq[:n1], r1_template[:n1], 5, -3, -4, -4, one_alignment_only=True)
-
-            if read_2 is not None:
-                n2 = min(len(read_1.seq), len(r2_template))
-                alignment_2 = pairwise2.align.localms(read_2.seq[:n2], r2_template[:n2], 5, -3, -4, -4, one_alignment_only=True)
-
-            if read_2 is not None:
-                if alignment_1[0].count("-") > 0 and alignment_2[0].count("-"):
-                    result["both_low_quality_skips"] += 1
-                    continue
-                elif alignment_1[0].count("-") > 0:
-                    result["r1_low_quality_skips"] += 1
-                    continue
-                elif alignment_2[0].count("-"):
-                    result["r2_low_quality_skips"] += 1
-                    continue
-            elif alignment_1[0].count("-") > 0:
-                result["low_quality_skips"] += 1
-                continue
-
-
-        result["reads_useful"] += 1
-        codons_1 = tuple([str(x) for x in codons_1])
-        result.increase_codon(codons_1)
-
-    return result

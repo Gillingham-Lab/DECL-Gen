@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Tuple
 import re
 import sys
 from rdkit import Chem
+from Bio.Seq import Seq
 
 _search_pattern = r"\[R([0-9]+)\]"
 
@@ -80,3 +81,30 @@ def is_valid(parsed: str, anchors: List[str]) -> bool:
         return False
     else:
         return True
+
+
+def get_codon_coordinates(template: Seq) -> List[Tuple[int, int]]:
+    """
+    Retrieves codon positions from a given template as a list of tuples with from-to coordinates. Codons must be
+    indicated as N.
+    :param template: The template to derive the coordinates from. A Bio.Seq.Seq object.
+    :return: List of coordinate tuples (from, to), 0-indexed.
+    """
+    start = 0
+    positions = []
+    while True:
+        temp_start = template.find("N", start)
+        temp_end = temp_start
+        for char in template[temp_start:]:
+            if char != "N":
+                break
+
+            temp_end+=1
+
+        start = temp_end
+        positions.append((temp_start, temp_end))
+
+        if template.find("N", start) < 0:
+            break
+
+    return positions
