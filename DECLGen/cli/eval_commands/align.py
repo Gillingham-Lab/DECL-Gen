@@ -8,13 +8,15 @@ from DECLGen.evaluation.qc import Type
 @argh.arg("r2", nargs="?")
 @argh.arg("--method", choices=Type.all)
 @argh.arg("--blocksize", type=int)
+@argh.arg("--quality", type=float)
 def extract(
-    r1: "Fastq file containing forward reads",
-    r2: "Fastq file containing reverse reads from paired read, if available",
-    threads: "Number of threads" = 8,
-    method = Type.default,
-    blocksize: "Size of reads to load before sending them to a thread" = 10000,
-    result_file: "Filename of the results. Generated automatically if not given" = None,
+        r1: "Fastq file containing forward reads",
+        r2: "Fastq file containing reverse reads from paired read, if available",
+        threads: "Number of threads" = 8,
+        method = Type.default,
+        quality: "Quality number whose purpose changes depending on the method used." = None,
+        blocksize: "Size of reads to load before sending them to a thread" = 10000,
+        result_file: "Filename of the results. Generated automatically if not given" = None
 ):
     r = Runtime()
 
@@ -22,7 +24,14 @@ def extract(
         a = LibraryNoDNATemplateException("You have not defined a DNA template.")
         r.error_exit(a)
 
-    result = r.storage.library.align(r1, r2, threads=threads, blocksize=blocksize, checktype=method)
+    result = r.storage.library.evaluate_sequencing_results(
+        r1,
+        r2,
+        threads=threads,
+        blocksize=blocksize,
+        method=method,
+        quality=quality
+    )
 
     # Save result
     if result_file is None:

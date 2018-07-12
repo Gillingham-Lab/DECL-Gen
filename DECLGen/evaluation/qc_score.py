@@ -4,7 +4,6 @@ from Bio.SeqRecord import SeqRecord
 from Bio import pairwise2
 from .metadata import ReadfileMetadata, ReadfileWorkerMetadata
 from .codon import extract
-from ..template import get_codon_coordinates
 
 def _qc_helper(read: Seq, r: ReadfileMetadata, f: float = 0.5) -> bool:
     score = pairwise2.align.localms(read, r.template, 5, -3, -4, -4, score_only=True)
@@ -22,13 +21,15 @@ def qc(
     read_1, read_2 = reads
     r1 = metadata.r1
     r2 = metadata.r2
+    quality = float(abs(metadata.quality)) or 0.5
+    quality = quality if quality < 1 else 1
 
     # Check quality
-    r1_pass = _qc_helper(read_1.seq, r1)
+    r1_pass = _qc_helper(read_1.seq, r1, quality)
     r2_pass = True
 
     if metadata.is_paired():
-        r2_pass = _qc_helper(read_2.seq, r2)
+        r2_pass = _qc_helper(read_2.seq, r2, quality)
 
     # Extract codons
     codons = (

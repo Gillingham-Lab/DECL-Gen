@@ -1,5 +1,4 @@
 from typing import Generator
-from enum import Enum
 from Bio import SeqIO
 from .metadata import ReadfileWorkerMetadata
 from .result import AlignmentResult
@@ -52,8 +51,6 @@ def read_processor(block: ReadBlock):
     """
     paired = block.metadata.is_paired()
     metadata = block.metadata
-    r1 = block.metadata.r1
-    r2 = block.metadata.r2
 
     result = AlignmentResult(paired=paired)
 
@@ -61,7 +58,7 @@ def read_processor(block: ReadBlock):
         result["reads_processed"] += 1
 
         # Call extraction algorithm
-        r1_pass, r2_pass, (codons_1, codons_2) = metadata.checktype((read_1, read_2), metadata)
+        r1_pass, r2_pass, (codons_1, codons_2) = metadata.method((read_1, read_2), metadata)
 
         if paired:
             # If paired, check if both codons are the same.

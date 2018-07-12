@@ -15,16 +15,14 @@ def _qc_helper(read: Seq, r: ReadfileMetadata, n: int) -> bool:
     if compare_sequence(read, r.template, 0, n) is False:
         has_passed = False
 
-    # Check around codon +- N for codon length L
+    # Check around codon +- n
     for positions in r.coordinates:
-        L = positions[1] - positions[0]
-
         # Check upstream of codon
-        if compare_sequence(read, r.template, positions[0] - L, positions[1] - L) is False:
+        if compare_sequence(read, r.template, positions[0] - n, positions[0]) is False:
             has_passed = False
 
         # Check downstream of codon
-        if compare_sequence(read, r.template, positions[0] + L, positions[1] + L) is False:
+        if compare_sequence(read, r.template, positions[1], positions[1] + n) is False:
             has_passed = False
 
     return has_passed
@@ -37,13 +35,14 @@ def qc(
     read_1, read_2 = reads
     r1 = metadata.r1
     r2 = metadata.r2
+    quality = int(round(metadata.quality)) or 5
 
     # Check quality
-    r1_pass = _qc_helper(read_1.seq, r1, metadata.compare_n)
+    r1_pass = _qc_helper(read_1.seq, r1, quality)
     r2_pass = True
 
     if metadata.is_paired():
-        r2_pass = _qc_helper(read_2.seq, r2, metadata.compare_n)
+        r2_pass = _qc_helper(read_2.seq, r2, quality)
 
     # Extract codons
     codons = (

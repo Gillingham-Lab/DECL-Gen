@@ -6,7 +6,7 @@ from .metadata import ReadfileMetadata, ReadfileWorkerMetadata
 from .codon import extract
 from ..template import get_codon_coordinates
 
-def _qc_helper(read: Seq, r: ReadfileMetadata, f: float = 0.2) -> Tuple[bool, Optional[List[Seq]]]:
+def _qc_helper(read: Seq, r: ReadfileMetadata, f: float = 0.3) -> Tuple[bool, Optional[List[Seq]]]:
     """
     Helper method for qc_align()
     :param read:
@@ -37,13 +37,15 @@ def qc(
     read_1, read_2 = reads
     r1 = metadata.r1
     r2 = metadata.r2
+    quality = float(abs(metadata.quality)) or 0.3
+    quality = quality if quality < 1 else 1
 
     # Check quality and fetch adjusted coordinates
-    r1_pass, r1_codons = _qc_helper(read_1.seq, r1)
+    r1_pass, r1_codons = _qc_helper(read_1.seq, r1, quality)
     r2_pass, r2_codons = True, None
 
     if metadata.is_paired():
-        r2_pass, r2_codons = _qc_helper(read_2.seq, r2)
+        r2_pass, r2_codons = _qc_helper(read_2.seq, r2, quality)
 
     # Extract codons
     codons = (

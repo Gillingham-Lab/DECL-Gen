@@ -1,4 +1,4 @@
-from typing import List, Set, Dict, Generator, Tuple, Union
+from typing import List, Set, Dict, Generator, Tuple, Union, Optional
 from operator import mul, itemgetter
 from functools import reduce
 from Bio import pairwise2, SeqIO
@@ -230,8 +230,25 @@ class Library:
 
         return queue, [x[1] for x in categories_by_size]
 
-    def align(self, r1, r2 = None, compare_n = 5, threads = 8, blocksize = 10, checktype ="simple"):
-        """ Evaluates read files """
+    def evaluate_sequencing_results(self,
+                                    r1: str,
+                                    r2: Optional[str] = None,
+                                    compare_n: int = 5,
+                                    threads: int = 8,
+                                    blocksize: int = 10,
+                                    method: str = "simple",
+                                    quality: Optional[Union[int, float]] = None
+                                    ) -> None:
+        """
+        Evaluates given sequencing result files
+        :param r1: fastq file containing the reads
+        :param r2: optional fastq file containing the paired reads
+        :param compare_n: A comparison factore. @ToDo: refactor!
+        :param threads: Number of threads to be used
+        :param blocksize: If harddrive is fast, higher values are better
+        :param method: Evaluation method. A choice of qc.all.
+        :return:
+        """
         template_f = Seq(self.get_formatted_stub_dna_template().upper(), alphabet=IUPAC.ambiguous_dna)
         template_r = template_f.reverse_complement()
 
@@ -253,14 +270,16 @@ class Library:
         all_results = None
 
         # Sanitize checktypes
-        if isinstance(checktype, str):
-            if checktype in qc.Type.all:
-                checktype = qc.Type.get(checktype)
+        if isinstance(method, str):
+            if method in qc.Type.all:
+                method = qc.Type.get(method)
             else:
-                raise EvaluationException("Unknown method given ({}). Use one of {}.".format(checktype, ", ".join(qc.Type.all)))
+                raise EvaluationException("Unknown method given ({}). Use one of {}.".format(method, ", ".join(qc.Type.all)))
 
         # Initialize Worker metadata
-        worker_metadata = ReadfileWorkerMetadata(r1, r2, blocksize=blocksize, checktype=checktype, compare_n=compare_n)
+        worker_metadata = ReadfileWorkerMetadata(r1, r2,
+                                                 blocksize=blocksize, method=method, compare_n=compare_n,
+                                                 quality=quality)
 
         with mp.Pool(threads) as pool:
             for temp_result in pool.imap_unordered(read_processor, read_loader(worker_metadata)):
@@ -303,25 +322,5 @@ class Library:
                 continue
 
         return reads_1_template, reads_2_template
-
-    def _get_n_positions_on_template(self, template):
-        start = 0
-        positions = []
-        while True:
-            temp_start = template.find("N", start)
-            temp_end = temp_start
-            for char in template[temp_start:]:
-                if char != "N":
-                    break
-
-                temp_end+=1
-
-            start = temp_end
-            positions.append((temp_start, temp_end))
-
-            if template.find("N", start) < 0:
-                break
-
-        return positions
 
 

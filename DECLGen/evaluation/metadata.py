@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Union
 from Bio.Seq import Seq
 
 class ReadfileType(Enum):
@@ -36,14 +36,16 @@ class ReadfileWorkerMetadata():
     r2 = None
     compare_n = None
     blocksize = None
-    checktype = None
+    method = None
+    quality = None
 
     def __init__(self,
                  r1: ReadfileMetadata,
                  r2: Optional[ReadfileMetadata],
                  compare_n: int,
                  blocksize: int,
-                 checktype,
+                 method,
+                 quality: Optional[Union[int, float]],
                  ):
         """
 
@@ -51,13 +53,14 @@ class ReadfileWorkerMetadata():
         :param r2:
         :param compare_n:
         :param blocksize:
-        :param checktype: DECLGen.evaluation.qc.Type
+        :param method: DECLGen.evaluation.qc.Type
         """
         self.r1 = r1
         self.r2 = r2
         self.compare_n = compare_n
         self.blocksize = blocksize
-        self.checktype = checktype
+        self.method = method
+        self.quality = quality
 
     def is_single(self):
         return True if self.r2 is None else False
