@@ -38,6 +38,7 @@ class ReadfileWorkerMetadata():
     blocksize = None
     method = None
     quality = None
+    kwargs = None
 
     def __init__(self,
                  r1: ReadfileMetadata,
@@ -46,6 +47,7 @@ class ReadfileWorkerMetadata():
                  blocksize: int,
                  method,
                  quality: Optional[Union[int, float]],
+                 **kwargs
                  ):
         """
 
@@ -61,9 +63,16 @@ class ReadfileWorkerMetadata():
         self.blocksize = blocksize
         self.method = method
         self.quality = quality
+        self.kwargs = kwargs
 
     def is_single(self):
         return True if self.r2 is None else False
 
     def is_paired(self):
         return False if self.r2 is None else True
+
+    def get_kwarg(self, key, default):
+        if key in self.kwargs:
+            return self.kwargs[key]
+
+        return default

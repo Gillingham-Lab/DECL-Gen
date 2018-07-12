@@ -29,6 +29,7 @@ def read_loader(
     reads_2 = SeqIO.parse(data.r2.filename, "fastq-illumina") if data.is_paired() else None
 
     read_block = ReadBlock(data)
+    read_total = 0
 
     for read_1 in reads_1:
         read_2 = next(reads_2) if reads_2 is not None else None
@@ -39,6 +40,11 @@ def read_loader(
         if len(read_block) == data.blocksize:
             yield read_block
             read_block = ReadBlock(data)
+
+        max_reads = data.get_kwarg("max_reads", None)
+        read_total += 1
+        if max_reads is not None and read_total >= max_reads:
+            break
 
     # We yield everything now that's left over
     yield read_block

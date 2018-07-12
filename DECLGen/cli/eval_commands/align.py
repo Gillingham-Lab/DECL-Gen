@@ -9,6 +9,7 @@ from DECLGen.evaluation.qc import Type
 @argh.arg("--method", choices=Type.all)
 @argh.arg("--blocksize", type=int)
 @argh.arg("--quality", type=float)
+@argh.arg("--max-reads", type=int)
 def extract(
         r1: "Fastq file containing forward reads",
         r2: "Fastq file containing reverse reads from paired read, if available",
@@ -16,7 +17,8 @@ def extract(
         method = Type.default,
         quality: "Quality number whose purpose changes depending on the method used." = None,
         blocksize: "Size of reads to load before sending them to a thread" = 10000,
-        result_file: "Filename of the results. Generated automatically if not given" = None
+        result_file: "Filename of the results. Generated automatically if not given" = None,
+        max_reads = None,
 ):
     r = Runtime()
 
@@ -30,7 +32,8 @@ def extract(
         threads=threads,
         blocksize=blocksize,
         method=method,
-        quality=quality
+        quality=quality,
+        max_reads=max_reads
     )
 
     # Save result

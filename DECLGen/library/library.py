@@ -237,7 +237,8 @@ class Library:
                                     threads: int = 8,
                                     blocksize: int = 10,
                                     method: str = "simple",
-                                    quality: Optional[Union[int, float]] = None
+                                    quality: Optional[Union[int, float]] = None,
+                                    **kwargs
                                     ) -> None:
         """
         Evaluates given sequencing result files
@@ -279,7 +280,7 @@ class Library:
         # Initialize Worker metadata
         worker_metadata = ReadfileWorkerMetadata(r1, r2,
                                                  blocksize=blocksize, method=method, compare_n=compare_n,
-                                                 quality=quality)
+                                                 quality=quality, **kwargs)
 
         with mp.Pool(threads) as pool:
             for temp_result in pool.imap_unordered(read_processor, read_loader(worker_metadata)):
