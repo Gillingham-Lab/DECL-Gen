@@ -1,9 +1,13 @@
-from typing import Generator
+from typing import Generator, Optional
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
 from .metadata import ReadfileWorkerMetadata
 from .result import AlignmentResult
 
 class ReadBlock():
+    """
+    Associates a block of reads and the corresponding meta data
+    """
     reads = None
     metadata = None
 
@@ -18,13 +22,24 @@ class ReadBlock():
         for read in self.reads:
             yield read
 
-    def append(self, r1, r2):
+    def append(self, r1: SeqRecord, r2: Optional[SeqRecord]):
+        """
+        Appends a read pair to the block. r2 can be none.
+        :param r1:
+        :param r2:
+        :return:
+        """
         self.reads.append((r1, r2))
 
 
 def read_loader(
         data: ReadfileWorkerMetadata
 ) -> Generator[ReadBlock, None, None]:
+    """
+    Iterates over the reads in the files given in data and yields the ReadBlock as soon as the blocksize is reached.
+    :param data:
+    :return:
+    """
     reads_1 = SeqIO.parse(data.r1.filename, "fastq-illumina")
     reads_2 = SeqIO.parse(data.r2.filename, "fastq-illumina") if data.is_paired() else None
 

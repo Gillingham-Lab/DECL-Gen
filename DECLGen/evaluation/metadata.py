@@ -65,10 +65,12 @@ class ReadfileWorkerMetadata():
         self.quality = quality
         self.kwargs = kwargs
 
-    def is_single(self):
+    def is_single(self) -> bool:
+        """ Returns true if only one read file is given. """
         return True if self.r2 is None else False
 
-    def is_paired(self):
+    def is_paired(self) -> bool:
+        """ Returns true if two read files are given. """
         return False if self.r2 is None else True
 
     def get_kwarg(self, key, default):

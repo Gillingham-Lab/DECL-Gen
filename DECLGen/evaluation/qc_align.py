@@ -29,7 +29,7 @@ def qc(
         metadata: ReadfileWorkerMetadata
 ) -> Tuple[bool, bool, Tuple[List[Seq], Optional[List[Seq]]]]:
     """
-    Quality control with true alignment
+    Alignment-based quality control and codon extraction.
     :param reads:
     :param metadata:
     :return:

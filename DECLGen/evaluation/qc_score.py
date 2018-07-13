@@ -18,6 +18,12 @@ def qc(
         reads: Tuple[SeqRecord, SeqRecord],
         metadata: ReadfileWorkerMetadata
 ) -> Tuple[bool, bool, Tuple[List[Seq], Optional[List[Seq]]]]:
+    """
+    Alignment-based scoring method for quality control.
+    :param reads:
+    :param metadata:
+    :return:
+    """
     read_1, read_2 = reads
     r1 = metadata.r1
     r2 = metadata.r2

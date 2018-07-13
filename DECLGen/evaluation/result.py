@@ -1,3 +1,6 @@
+from typing import Tuple, Dict
+from Bio.Seq import Seq
+
 class AlignmentResult():
     """ Represents the result of codon alignment. """
     _result = None
@@ -72,13 +75,29 @@ class AlignmentResult():
 
         return "\n".join(ret)
 
-    def init_codon(self, codon) -> None:
+    def init_codon(self, codon: Tuple) -> None:
+        """
+        Initializes a given codon set by adding it to the dictionary and setting it to 0. If already existing, this
+        method does nothing.
+        :param codon: A tuple of codons
+        :return:
+        """
         if codon not in self._codons:
             self._codons[codon] = 0
 
-    def increase_codon(self, codon, increase=1):
+    def increase_codon(self, codon: Tuple, increase: int = 1) -> None:
+        """
+        Increases the counts of a given codon by the given amount. If the amount is not given, it increases the codon by 1.
+        :param codon:
+        :param increase:
+        :return:
+        """
         self.init_codon(codon)
         self._codons[codon] += increase
 
-    def get_codons(self):
+    def get_codons(self) -> Dict[Tuple, int]:
+        """
+        Returns the dictionary of codons.
+        :return: A dictionary where keys are tuples of codons and values the corresponding integer.
+        """
         return self._codons
