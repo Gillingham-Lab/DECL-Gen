@@ -6,6 +6,7 @@ class ReadfileType(Enum):
     forward = 0
     reverse = 1
 
+
 class ReadfileMetadata():
     filename = None
     template = None

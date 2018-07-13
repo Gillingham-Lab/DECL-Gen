@@ -5,24 +5,11 @@ from .exceptions import *
 from .terminal import Terminal
 from . import codon
 
-DECLGen_meta = dict(
-    name="DECL-Gen",
-    version="v1.0-alpha",
-    description="A tool to generate DNA encoded compound library from fragments and calculate their properties.",
-    url="https://github.com/Gillingham-Lab/DECL-Gen",
+__name__ = "DECL-Gen"
+__description__ = "A tool to generate DNA encoded compound library from fragments and calculate their properties."
+__author__ = "Basilius Sauter"
+__author_email__ = "basilius.sauter@unibas.ch"
+__url__ = "https://github.com/Gillingham-Lab/DECL-Gen"
 
-    author="Basilius Sauter",
-    author_email="basilius.sauter@unibas.ch",
-    year="2018",
-
-    install_requires=[
-        "argh",
-        "rdkit"
-    ],
-
-    entry_points={
-        "console_scripts": [
-            'declGen=DECLGen.cli.main:main',
-        ]
-    }
-)
+__version__ = "v1.0-beta"
+__year__ = "2018"

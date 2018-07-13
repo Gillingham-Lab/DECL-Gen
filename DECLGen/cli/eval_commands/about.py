@@ -1,7 +1,7 @@
 import os
 import sys
 from colorama import init, Fore, Style
-from DECLGen import DECLGen_meta
+import DECLGen
 
 
 def about():
@@ -24,11 +24,17 @@ def about():
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.{reset}
-    """.format(**{**DECLGen_meta, **{
+    """.format(**{
+        "name": DECLGen.__name__,
+        "version": DECLGen.__version__,
+        "description": DECLGen.__description__,
+        "year": DECLGen.__year__,
+        "author": DECLGen.__author__,
         "highlight": Fore.LIGHTWHITE_EX,
         "lowlight": Fore.LIGHTBLACK_EX,
         "help": Fore.GREEN,
-        "reset": Fore.RESET}}))
+        "reset": Fore.RESET
+    }))
 
 
 
