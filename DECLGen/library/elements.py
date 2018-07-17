@@ -1,15 +1,18 @@
+import DECLGen.library
 from DECLGen import template, codon
 from DECLGen.exceptions import LibraryElementException
 
 
 class Element:
-    """Represents a diversity element. A element always belongs to a category"""
-    cat = None
-    raw_smiles = None
-    parsed_smiles = None
-    index = None
+    """
+    Represents a diversity element. A element always belongs to a category.
+    """
+    cat: 'DECLGen.library.Category'
+    raw_smiles: str
+    parsed_smiles: str
+    index: int
 
-    def __init__(self, cat, smiles: str, index: int):
+    def __init__(self, cat: 'DECLGen.library.Category', smiles: str, index: int):
         self.cat = cat
         self.user_smiles = smiles
         self.raw_smiles = template.sanitize(smiles)

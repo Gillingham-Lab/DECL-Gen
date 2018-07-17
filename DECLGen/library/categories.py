@@ -1,6 +1,6 @@
 import math
 import os
-from typing import List, Dict, Union, Iterable
+from typing import List, Dict, Union, Iterable, Optional
 from DECLGen import codon, template
 from DECLGen.exceptions import \
     LibraryCategoryException, \
@@ -13,18 +13,31 @@ from DECLGen.exceptions import \
 from .elements import Element
 
 
-class BaseCategory:
-    def __iter__(self) -> Iterable[Element]: pass
-    def __len__(self) -> int: pass
-    def get_anchors(self) -> List[str]: pass
+class Category:
+    """
+        Represents a diversity element category.
 
-class Category(BaseCategory):
-    id = None
-    name = None
-    anchors = None
-    codon_length = None
-    elements = None
-    reverse_complement = None
+        Attributes:
+            id: str
+                The user-given identifier. Must not contain spaces.
+            name: str
+                A human-readable name for the category. Can be any text.
+            anchors: List[str]
+                A list of anchors that this class requires (eg., ["R1", "R2"])
+            codon_length: int
+                The codon length set for this category. Can be anything if set to 0. Internal use only.
+                Consider using get_codon_length() if the minimum codon length is required.
+            elements: Dict[str, Element]
+                A dictionary that associates encoded codon with the element.
+            reverse_complement: Optional[bool]
+                True if the codon should be read as it's reverse complement. Internal use only. Consider using is_reverse_complement()
+        """
+    id: str
+    name: str
+    anchors: List[str]
+    codon_length: int
+    elements: Dict[str, Element]
+    reverse_complement: Optional[bool] = None
 
     def __init__(self, id: str, name: str, anchors: List[str], codon_length: int = 0):
         self.id = id
@@ -243,7 +256,7 @@ class Category(BaseCategory):
 
         return c
 
-    def import_elements_from_cat(self, origin: BaseCategory, anchors: Dict[str, str], updateable=None) -> int:
+    def import_elements_from_cat(self, origin: 'Category', anchors: Dict[str, str], updateable=None) -> int:
         if len(origin) == 0:
             raise LibraryCategoryEmptyException("The origin category is empty, cannot import from this category.")
 
