@@ -1,3 +1,4 @@
+import argh
 from DECLGen import Runtime
 from DECLGen.exceptions import \
     DECLException, \
@@ -97,6 +98,43 @@ def elm_import(
         progressBar = ProgressBar(r.t)
         progressBar.start()
         imported = cat.import_elements(filename, updateable=progressBar)
+        progressBar.finish()
+
+        print("Added {} compounds".format(imported))
+    except DECLException as e:
+        print()
+        r.error_exit(e)
+
+    r.save()
+
+
+@argh.arg("anchors", nargs="+")
+def elm_import_cat(
+        id: "Category identifier",
+        origin: "Category identifier from which should be imported",
+        anchors: "Anchor translation in format of old:new. Use R1:R8 R2:R9 to rename anchor R1 to R8 and R2 to R9."
+):
+    r = Runtime()
+
+    try:
+        # Format anchors
+        try:
+            anchor_translation = {}
+            for anchor in anchors:
+                anchor_f, anchor_t = anchor.split(":")
+                anchor_translation[anchor_f] = anchor_t
+        except Exception:
+            raise DECLException("Wrong anchor format. Use a space-separated list of R1:R2 pairs.")
+
+
+        cat = r.storage.library.get_category(id)
+        cat_origin = r.storage.library.get_category(origin)
+        print("Importing...")
+        print(anchor_translation)
+
+        progressBar = ProgressBar(r.t)
+        progressBar.start()
+        imported = cat.import_elements_from_cat(cat_origin, anchor_translation, updateable=progressBar)
         progressBar.finish()
 
         print("Added {} compounds".format(imported))

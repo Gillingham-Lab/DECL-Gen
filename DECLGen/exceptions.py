@@ -36,6 +36,14 @@ class LibraryCategoryFullException(LibraryCategoryException):
     exitcode = 24
 
 
+class LibraryCategoryEmptyException(LibraryCategoryException):
+    exitcode = 25
+
+
+class LibraryCategoryAnchorException(LibraryCategoryException):
+    exitcode = 28
+
+
 class LibraryElementException(DECLException):
     exitcode = 30
 

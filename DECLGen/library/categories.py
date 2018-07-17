@@ -1,17 +1,24 @@
 import math
 import os
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Iterable
 from DECLGen import codon, template
 from DECLGen.exceptions import \
     LibraryCategoryException, \
     LibraryCategoryFullException, \
+    LibraryCategoryEmptyException, \
+    LibraryCategoryAnchorException, \
     LibraryElementException, \
     LibraryElementNotFoundException, \
     LibraryElementExistsException
 from .elements import Element
 
 
-class Category:
+class BaseCategory:
+    def __iter__(self) -> Iterable[Element]: pass
+    def __len__(self) -> int: pass
+    def get_anchors(self) -> List[str]: pass
+
+class Category(BaseCategory):
     id = None
     name = None
     anchors = None
@@ -26,14 +33,14 @@ class Category:
         self.set_codon_length(codon_length)
         self.clear()
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[Element]:
         for index in self.elements:
             yield self.elements[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.elements)
 
-    def get_anchors(self):
+    def get_anchors(self) -> List[str]:
         """ Returns all anchors required within this category. """
         return self.anchors
 
@@ -235,3 +242,54 @@ class Category:
                 c += 1
 
         return c
+
+    def import_elements_from_cat(self, origin: BaseCategory, anchors: Dict[str, str], updateable=None) -> int:
+        if len(origin) == 0:
+            raise LibraryCategoryEmptyException("The origin category is empty, cannot import from this category.")
+
+        anchor_origin = [*anchors.keys()]
+        anchor_target = [*anchors.values()]
+
+        # Check anchor consistency in origin
+        found = 0
+        for anchor in anchor_origin:
+            if anchor in origin.anchors:
+                found += 1
+
+        if found < len(origin.anchors):
+            raise LibraryCategoryAnchorException("Not all anchors set for category {} are given ({}).".format(origin.id, ",".join(origin.get_anchors())))
+
+        # Check anchor consistency in target (self)
+        found = 0
+        for anchor in anchor_target:
+            if anchor in self.get_anchors():
+                found += 1
+
+        if found < len(self.anchors):
+            raise LibraryCategoryAnchorException("Not all anchors set for category {} are given ({}).".format(self.id, ",".join(self.get_anchors())))
+
+        # Clear self elements
+        self.clear()
+
+        added = 0
+        for element in origin:
+            index = element.index
+            smiles = element.raw_smiles
+
+            # Translate table
+            for k in range(len(anchors)):
+                search = "[{}]".format(anchor_origin[k])
+                replce = "[{}]".format(anchor_target[k])
+
+                smiles = smiles.replace(search, replce)
+
+            self.add_element(smiles, index)
+            added += 1
+
+        return added
+
+
+
+
+
+

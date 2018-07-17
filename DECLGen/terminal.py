@@ -6,6 +6,7 @@ class Terminal:
     underline = Fore.CYAN
     red = Fore.RED
     normal = Style.RESET_ALL
+    green = Fore.GREEN
 
     def __init__(self):
         init(autoreset=False, convert=True)

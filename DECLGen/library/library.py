@@ -108,7 +108,11 @@ class Library:
             if cat.is_reverse_complement():
                 codon_list[catId] = codon.reverse(codon_list[catId])
 
-        template = self.dna_template.replace("}", "{").split("{")
+        template = self.dna_template
+        if template is None:
+            template = "A" + "A".join(["{" + x + "}" for x in codon_list.keys()]) + "A"
+
+        template = template.replace("}", "{").split("{")
         codon_summary = []
         for stuff in template:
             if stuff in codon_list:
