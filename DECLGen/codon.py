@@ -25,6 +25,8 @@ def encode(n: int, length: int) -> str:
         raise ValueError("n must be >= 0")
     if length <= 0:
         raise ValueError("length must be > 0")
+    if n >= len(bases)**length:
+        raise ValueError("length must be sufficient for n.")
 
     # Build-up codon, lowest digit first
     l = len(bases)
