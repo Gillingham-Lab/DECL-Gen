@@ -1,6 +1,11 @@
 from .about import about
-from .align import extract
+from .exctract import extract
+from .compare import compare
+from .report import report
 
 commands = [
-    about, extract
+    about,
+    extract,
+    compare,
+    report,
 ]
