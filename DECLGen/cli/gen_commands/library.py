@@ -1,3 +1,5 @@
+import argh
+from timeit import default_timer as timer
 import multiprocessing as mp
 from typing import List, Dict, Iterable
 from csv import writer
@@ -94,9 +96,11 @@ def yield_helper(cat1, cats):
         yield elements
 
 
+@argh.arg("--timing", action="store_true")
 def lib_generate(
     threads: "Number of threads" = 1,
     all: "Include all possible data" = False,
+    timing: "Measure time needed for generation" = False,
     mw: "Include molecular weight" = False,
     qed: "Quantitative estimation of drug-like properties" = False,
     tpsa: "Topological polar surface area" = False,
@@ -115,6 +119,10 @@ def lib_generate(
 ):
     """ Generates physicochemical properties of the library and saves them in library-properties.tsv"""
     r = Runtime()
+
+    s, e = (0, 0)
+    if timing:
+        s = timer()
 
     queue, elements = r.storage.library.generate_molecule_queue()
 
@@ -153,7 +161,13 @@ def lib_generate(
             except Exception as e:
                 print("{t.red}Error!\n{e}{t.normal}\n".format(e=e,t=r.t))
 
+    if timing:
+        e = timer()
+
     print("Number of jobs: ", j)
     print("Number of molecules generated: ", i)
+
+    if timing:
+        print("Time required: {:.2f}".format(e-s))
 
 

@@ -46,6 +46,7 @@ def sanitize(raw_template: str) -> str:
                 raw_template[atom_pos + atom_length:]
             )
 
+        raw_template = re.sub(r"(\([A-Z0-9\(\)\[\]]+\))(\(\[R[0-9]+\]\))", lambda x: "".join([x.group(2), x.group(1)]), raw_template)
         raw_template = re.sub(r"\((\[R([0-9]+)\])\)", lambda x: x.group(1), raw_template)
 
     return raw_template
@@ -56,7 +57,8 @@ def count_anchors(raw_template: str) -> int:
 
 
 def get_anchors(raw_template: str) -> List[str]:
-    return ["R{}".format(x) for x in re.findall(_search_pattern, raw_template)]
+    """ Returns all anchors defined in the scaffold. """
+    return sorted(["R{}".format(x) for x in re.findall(_search_pattern, raw_template)])
 
 
 def _parse_callback(n) -> str:
@@ -108,3 +110,4 @@ def get_codon_coordinates(template: Union[Seq, str]) -> List[Tuple[int, int]]:
             break
 
     return positions
+
