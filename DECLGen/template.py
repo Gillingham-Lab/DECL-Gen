@@ -66,7 +66,7 @@ def _parse_callback(n) -> str:
     if n < 90:
         return "%{}".format(99 - n)
     else:
-        ValueError("{name} only supports R labels from R0 to R89 due to technical reasons.".format(name=sys.argv[0]))
+        raise ValueError("{name} only supports R labels from R0 to R89 due to technical reasons.".format(name=sys.argv[0]))
 
 
 def parse(raw_template: str) -> str:
