@@ -50,3 +50,16 @@ class TemplateTestCase(unittest.TestCase):
         for a, b in tests:
             with self.subTest(i=(a, b)):
                 self.assertEqual(b, template.sanitize(a))
+
+    def test_if_parsing_correct_scaffolds_returns_correct_string(self):
+        tests = [
+            ("CCC([R1])C(O)=O", "CCC%99C(O)=O"),
+            ("CCC([A])C(O)=O", "CCC([A])C(O)=O"),
+            ("CCC([R7A])C(O)=O", "CCC([R7A])C(O)=O"),
+            ("CCC([R88])C(O)=O", "CCC%11C(O)=O"),
+            ("CCC(N)C([R2])=0", "CCC(N)C%98=0"),
+            ("CCC([R1])C([R2])=0", "CCC%99C%98=0"),
+            ("CCC([R2])C([R1])=0", "CCC%98C%99=0"),
+            ("CCC(N[R2])C([R1])=0", "CCC(N%98)C%99=0"),
+            ("CCC(N[R2])([R3])C([R1])=0", "CCC%97(N%98)C%99=0"),
+        ]
