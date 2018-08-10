@@ -1,4 +1,5 @@
 import unittest
+from rdkit import RDLogger
 
 from DECLGen import template
 
@@ -92,6 +93,10 @@ class TemplateTestCase(unittest.TestCase):
                 self.assertTrue(template.is_valid(template.parse(template.sanitize(a)), template.get_anchors(a)))
 
     def test_if_is_valid_returns_are_false_if_smiles_is_not_good(self):
+        # Silence RDKit logger
+        logger = RDLogger.logger()
+        logger.setLevel(RDLogger.CRITICAL)
+
         tests = [
             "C([A])CC([R1])C(O)=O",
             "CCC([U7])C(O)=O",
