@@ -58,3 +58,7 @@ class LibraryElementExistsException(LibraryCategoryException):
 
 class EvaluationException(DECLException):
     exitcode = 100
+
+
+class MoleculeInvalidSmilesException(ValueError):
+    pass

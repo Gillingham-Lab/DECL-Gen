@@ -1,6 +1,8 @@
 from typing import Dict, List, Union
 from rdkit import Chem
-from rdkit.Chem import AllChem, Draw, Crippen, Lipinski, Descriptors, QED
+from rdkit.Chem import AllChem, Draw, Crippen, Lipinski, Descriptors, QED, MolSurf
+
+from .exceptions import MoleculeInvalidSmilesException
 
 def property_title(name):
     def property_title_decorator(func):
@@ -16,6 +18,9 @@ class Molecule:
     def __init__(self, smiles):
         self._smiles = smiles
         self._mol = Chem.MolFromSmiles(smiles)
+
+        if self._mol is None:
+            raise MoleculeInvalidSmilesException
 
     @staticmethod
     def get_data_headers(data_fields: Dict[str, bool]) -> List[str]:
@@ -51,6 +56,10 @@ class Molecule:
     @property_title("TPSA")
     def tpsa(self) -> Union[int, float]:
         return AllChem.CalcTPSA(self._mol)
+
+    @property_title("LabuteASA")
+    def labute_asa(self):
+        return MolSurf.pyLabuteASA(self._mol, 1)
 
     @property_title("TPSApMW")
     def tpsapermw(self) -> float:

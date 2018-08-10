@@ -89,34 +89,42 @@ class Library:
         return self.dna_template.format(**formatting)
 
     def get_formatted_dna_template(self, codon_list: Dict[str, str]) -> Union[str, None]:
+        codon_list_edited = {}
+
         for catId in codon_list.keys():
             if self.has_category(catId) is False:
                 raise KeyError("Unknown category id ({})".format(catId))
 
             cat = self.get_category(catId)
             if cat.is_reverse_complement():
-                codon_list[catId] = codon.reverse(codon_list[catId])
+                codon_list_edited[catId] = codon.reverse(codon_list[catId])
+            else:
+                codon_list_edited[catId] = codon_list[catId]
 
-        return self.dna_template.format(**codon_list)
+        return self.dna_template.format(**codon_list_edited)
 
     def get_codon_summary_string(self, codon_list: Dict[str, str]) -> Union[str, None]:
+        codon_list_edited = {}
+
         for catId in codon_list.keys():
             if self.has_category(catId) is False:
                 raise KeyError("Unknown category id ({})".format(catId))
 
             cat = self.get_category(catId)
             if cat.is_reverse_complement():
-                codon_list[catId] = codon.reverse(codon_list[catId])
+                codon_list_edited[catId] = codon.reverse(codon_list[catId])
+            else:
+                codon_list_edited[catId] = codon_list[catId]
 
         template = self.dna_template
         if template is None:
-            template = "A" + "A".join(["{" + x + "}" for x in codon_list.keys()]) + "A"
+            template = "A" + "A".join(["{" + x + "}" for x in codon_list_edited.keys()]) + "A"
 
         template = template.replace("}", "{").split("{")
         codon_summary = []
         for stuff in template:
-            if stuff in codon_list:
-                codon_summary.append(codon_list[stuff])
+            if stuff in codon_list_edited:
+                codon_summary.append(codon_list_edited[stuff])
         return "-".join(codon_summary)
 
 
