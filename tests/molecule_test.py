@@ -1,7 +1,7 @@
 import unittest
 from rdkit import RDLogger
 
-from DECLGen.molecule import Molecule
+from DECLGen.molecule import Molecule, property_title
 from DECLGen.exceptions import MoleculeInvalidSmilesException
 
 class MoleculeTestCase(unittest.TestCase):
@@ -156,6 +156,44 @@ class MoleculeTestCase(unittest.TestCase):
         self.assertIsInstance(r, int)
         self.assertEqual(3, r)
 
+    def test_molecule_get_data_returns_specific_fields(self):
+        fields = [
+            "canonical_smiles",
+            "mw",
+            "qed",
+            "tpsa",
+            "tpsapermw",
+            "labute_asa",
+            "alogp",
+            "hdonors",
+            "hacceptors",
+            "nhetero",
+            "rotatable",
+            "no",
+            "nhoh",
+            "rings",
+            "maxRingSize",
+            "csp3",
+            "heavyAtoms",
+        ]
+        n = len(fields)
 
+        m = Molecule("CC=O")
 
+        for x in range(len(fields)):
+            for i in range(n-x):
+                subFields = fields[x:x+i+1]
 
+                with self.subTest(i=(i,x+i+1,subFields)):
+                    data = m.get_data({x: True for x in subFields})
+                    headers = m.get_data_headers({x: True for x in subFields})
+
+                    self.assertEqual(len(data), len(headers))
+                    self.assertEqual(len(data), i+1)
+
+    def test_if_decorator_decorates_properly(self):
+        @property_title("A")
+        def test(a):
+            return 0
+
+        self.assertEqual("A", test.title)

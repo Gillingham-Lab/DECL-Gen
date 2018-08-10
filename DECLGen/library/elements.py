@@ -1,4 +1,5 @@
 import DECLGen.library
+
 from DECLGen import template, codon
 from DECLGen.exceptions import LibraryElementException
 
@@ -13,6 +14,15 @@ class Element:
     index: int
 
     def __init__(self, cat: 'DECLGen.library.Category', smiles: str, index: int):
+        if not isinstance(cat, DECLGen.library.Category):
+            raise ValueError("category must be DECLGen.library.Category")
+
+        if not isinstance(index, int):
+            raise ValueError("index must be an integer")
+
+        if index < 0:
+            raise ValueError("index must be >= 0")
+
         self.cat = cat
         self.user_smiles = smiles
         self.raw_smiles = template.sanitize(smiles)
