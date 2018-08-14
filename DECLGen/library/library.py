@@ -305,8 +305,8 @@ class Library:
         return all_results
 
     def _assign_template(self, template_f: Seq, template_r: Seq, r1: str, r2: str, n: int = 5):
-        reads_1 = SeqIO.parse(r1, "fastq-illumina")
-        reads_2 = SeqIO.parse(r2, "fastq-illumina") if r2 is not None else None
+        reads_1 = SeqIO.parse(r1, "fastq")
+        reads_2 = SeqIO.parse(r2, "fastq") if r2 is not None else None
 
         reads_1_template = None
         reads_2_template = None

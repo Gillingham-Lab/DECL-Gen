@@ -40,8 +40,8 @@ def read_loader(
     :param data:
     :return:
     """
-    reads_1 = SeqIO.parse(data.r1.filename, "fastq-illumina")
-    reads_2 = SeqIO.parse(data.r2.filename, "fastq-illumina") if data.is_paired() else None
+    reads_1 = SeqIO.parse(data.r1.filename, "fastq")
+    reads_2 = SeqIO.parse(data.r2.filename, "fastq") if data.is_paired() else None
 
     read_block = ReadBlock(data)
     read_total = 0

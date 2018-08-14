@@ -47,6 +47,9 @@ def extract(
         for codon in codon_list:
             fh.write("{0}\t{1}\n".format("-".join([str(x) for x in codon]), codon_list[codon]))
 
+    with open(result_file[:-4] + ".log", "w") as fh:
+        fh.write(str(result))
+
     # Show log information
     print(result)
     print("\nAll results have been saved into {}".format(result_file))

@@ -1,7 +1,11 @@
+from typing import Dict
+
 from .BaseReport import BaseReport
 
 
 class TextReport(BaseReport):
+    template: Dict[str, str] = {}
+
     def _get_formatted_stats(self) -> str:
         formatted = []
         for stat in self.stats:

@@ -34,6 +34,7 @@ class ElementsTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             element = Element(cat, "CCO[R1]", -1)
 
+
     def test_if_exception_is_raised_if_index_is_not_integer(self):
         cat = self._get_dummy_cat()
 
