@@ -12,8 +12,8 @@ def _qc_helper(read: Seq, r: ReadfileMetadata, n: int) -> bool:
     has_passed = True
 
     # Check beginning of read
-    if compare_sequence(read, r.template, 0, n) is False:
-        has_passed = False
+    #if compare_sequence(read, r.template, 0, n) is False:
+    #    has_passed = False
 
     # Check around codon +- n
     for positions in r.coordinates:

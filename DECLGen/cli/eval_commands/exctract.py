@@ -1,5 +1,6 @@
 import os
 import argh
+from timeit import default_timer as timer
 
 from DECLGen import Runtime
 from DECLGen.exceptions import LibraryNoDNATemplateException
@@ -10,6 +11,7 @@ from DECLGen.evaluation.qc import Type
 @argh.arg("--blocksize", type=int)
 @argh.arg("--quality", type=float)
 @argh.arg("--max-reads", type=int)
+@argh.arg("--timing", default=False)
 def extract(
         r1: "Fastq file containing forward reads",
         r2: "Fastq file containing reverse reads from paired read, if available",
@@ -19,8 +21,14 @@ def extract(
         blocksize: "Size of reads to load before sending them to a thread" = 10000,
         result_file: "Filename of the results. Generated automatically if not given" = None,
         max_reads = None,
+        timing = False,
+        save_failed: "Save failed reads" = False,
 ):
     r = Runtime()
+
+    s, e = (0, 0)
+    if timing:
+        s = timer()
 
     if r.storage.library.get_dna_template() == None:
         a = LibraryNoDNATemplateException("You have not defined a DNA template.")
@@ -50,6 +58,19 @@ def extract(
     with open(result_file[:-4] + ".log", "w") as fh:
         fh.write(str(result))
 
+    if save_failed:
+        with open("".join([os.path.basename(r1).split(".")[0], "1.failed"]), "w") as fr1, \
+            open("".join([os.path.basename(r1).split(".")[0], "1.failed"]), "w") as fr2:
+            for read1, read2 in result._failed_reads:
+                fr1.write(fr1 + "\n")
+                fr2.write(fr2 + "\n")
+
+    if timing:
+        e = timer()
+
     # Show log information
     print(result)
     print("\nAll results have been saved into {}".format(result_file))
+
+    if timing:
+        print("Time required: {:.2f}".format(e-s))

@@ -4,6 +4,8 @@ from .BaseReport import BaseReport
 
 class HTMLReport(BaseReport):
     template: Dict[str, str] = {}
+    plots = []
+
     def _get_formatted_stats(self) -> str:
         formatted = []
         for stat in self.stats:
@@ -17,6 +19,21 @@ class HTMLReport(BaseReport):
             formatted.append(self.template["table_entry"].format(**entry))
 
         return "\n".join(formatted)
+
+    def _get_formatted_other(self):
+        other = []
+
+        for plot in self.plots:
+            entry = """
+                <h2>{title}</h2>
+                <p><img src="data:{encoding},{imgb64}" />
+            """.format(title=plot[0], imgb64=plot[1], encoding=plot[2])
+            other.append(entry)
+
+        return "".join(other)
+
+    def append_plot(self, title, image, encoding = None):
+        self.plots.append((title, image.decode("ASCII"), "image/png;base64" if encoding is None else encoding))
 
 
 
@@ -67,6 +84,8 @@ HTMLReport.template["main"] = """<!DOCTYPE html>
 			<dl>
 			    {stats}
 			</dl>
+			
+        {other}
 		
 		<h2>Top hits</h2>
 		<table>
@@ -97,6 +116,6 @@ HTMLReport.template["table_entry"] = """<tr>
     <td>{count}</td>
     <td>{codon}</td>
     <td class="smiles">{smiles}</td>
-    <td><img src="data:image/png;base64,{imgb64}" /></td>
+    <td><img src="data:mage/png;base64,{imgb64}" /></td>
 </tr>
 """

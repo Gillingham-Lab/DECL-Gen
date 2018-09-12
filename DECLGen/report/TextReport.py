@@ -20,6 +20,9 @@ class TextReport(BaseReport):
 
         return "\n".join(formatted)
 
+    def _get_formatted_other(self):
+        return ""
+
 
 TextReport.template["main"] = """
 Report: {title}

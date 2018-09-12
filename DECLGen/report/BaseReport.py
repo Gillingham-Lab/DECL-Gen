@@ -34,6 +34,9 @@ class BaseReport:
     def _get_formatted_table_entries(self):
         raise NotImplementedError()
 
+    def _get_formatted_other(self):
+        raise NotImplementedError()
+
     def save(self) -> None:
         content = str(self)
 
@@ -44,7 +47,8 @@ class BaseReport:
         content = self.template["main"].format(
             title=self.title,
             stats=self._get_formatted_stats(),
-            table_entries=self._get_formatted_table_entries()
+            table_entries=self._get_formatted_table_entries(),
+            other=self._get_formatted_other(),
         )
 
         return content

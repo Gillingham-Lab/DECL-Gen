@@ -21,6 +21,7 @@ class AlignmentResult():
         self._result = {key: 0 for key in self._key_annotations}
         self._codons = {}
         self._paired = paired
+        self._failed_reads = []
 
     def __getitem__(self, item):
         if item not in self._result:
@@ -44,7 +45,7 @@ class AlignmentResult():
 
         self._result[item] = value
 
-    def __add__(self, othr):
+    def __add__(self, othr: "AlignmentResult"):
         r = self.__class__()
         # Add result meta
         for key in self._result:
@@ -58,6 +59,9 @@ class AlignmentResult():
             r.increase_codon(codon, self_codons[codon])
         for codon in othr_codons:
             r.increase_codon(codon, othr_codons[codon])
+
+        # Merge failed reads
+        r._failed_reads = self._failed_reads + othr._failed_reads
 
         return r
 
@@ -101,3 +105,6 @@ class AlignmentResult():
         :return: A dictionary where keys are tuples of codons and values the corresponding integer.
         """
         return self._codons
+
+    def add_failed_read(self, read1, read2):
+        self._failed_reads.append((read1, read2))
