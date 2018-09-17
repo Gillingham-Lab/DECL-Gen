@@ -87,27 +87,27 @@ def read_processor(block: ReadBlock):
                 result["valid_pairs"] += 1
             else:
                 result["invalid_pairs"] += 1
-                result.add_failed_read(read_1, read_2)
+                result.add_failed_read(read_1.seq, read_2)
                 continue
 
             # Check and report which read was wrong
             if not r1_pass and not r2_pass:
                 result["both_low_quality_skips"] += 1
-                result.add_failed_read(read_1, read_2)
+                result.add_failed_read(read_1.seq, read_2.seq)
                 continue
             elif not r1_pass:
                 result["r1_low_quality_skips"] += 1
-                result.add_failed_read(read_1, read_2)
+                result.add_failed_read(read_1.seq, read_2.seq)
                 continue
             elif not r2_pass:
                 result["r2_low_quality_skips"] += 1
-                result.add_failed_read(read_1, read_2)
+                result.add_failed_read(read_1.seq, read_2.seq)
                 continue
         else:
             # Report if read was wrong
             if not r1_pass:
                 result["low_quality_skips"] += 1
-                result.add_failed_read(read_1, read_2)
+                result.add_failed_read(read_1.seq, read_2.seq)
                 continue
 
 
