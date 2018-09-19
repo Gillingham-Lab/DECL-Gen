@@ -62,8 +62,8 @@ def extract(
         with open("".join([os.path.basename(r1).split(".")[0], ".1.failed"]), "w") as fr1, \
             open("".join([os.path.basename(r1).split(".")[0], ".2.failed"]), "w") as fr2:
             for read1, read2 in result._failed_reads:
-                fr1.write(read1 + "\n")
-                fr2.write(read2 + "\n")
+                fr1.write(str(read1) + "\n")
+                fr2.write(str(read2) + "\n")
 
     if timing:
         e = timer()
