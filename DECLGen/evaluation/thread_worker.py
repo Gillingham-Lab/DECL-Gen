@@ -87,7 +87,7 @@ def read_processor(block: ReadBlock):
                 result["valid_pairs"] += 1
             else:
                 result["invalid_pairs"] += 1
-                result.add_failed_read(read_1.seq, read_2)
+                result.add_failed_read(read_1.seq, read_2.seq)
                 continue
 
             # Check and report which read was wrong
