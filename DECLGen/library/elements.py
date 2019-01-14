@@ -9,6 +9,7 @@ class Element:
     Represents a diversity element. A element always belongs to a category.
     """
     cat: 'DECLGen.library.Category'
+    user_smiles: str
     raw_smiles: str
     parsed_smiles: str
     index: int

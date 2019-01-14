@@ -19,17 +19,17 @@ def elm_list(
         if for_export is False:
             print("{t.bold}{a}\t{b}\t{c}{t.normal}".format(a="index", b="codon", c="smiles", t=r.t))
             for element in cat:
-                print("{}\t{}\t{}".format(element.index, element.codon, element.raw_smiles))
+                print("{}\t{}\t{}".format(element.index, element.codon, element.user_smiles))
         else:
             for element in cat:
-                print("{}\t{}".format(element.codon, element.raw_smiles))
+                print("{}\t{}".format(element.codon, element.user_smiles))
     except DECLException as e:
         r.error_exit(e)
 
 
 def elm_show(
-        id: "Category identifier",
-        index: "Element index."
+    id: "Category identifier",
+    index: "Element index."
 ):
     """ Shows a given element of a given diversity element category. """
     r = Runtime()
@@ -39,7 +39,7 @@ def elm_show(
         elm = cat.get_element(index)
 
         print("{t.bold}{a}\t{b}\t{c}{t.normal}".format(a="index", b="codon", c="smiles", t=r.t))
-        print("{}\t{}\t{}".format(elm.index, elm.codon, elm.raw_smiles))
+        print("{}\t{}\t{}".format(elm.index, elm.codon, elm.user_smiles))
     except DECLException as e:
         r.error_exit(e)
 
@@ -107,8 +107,8 @@ def elm_replace():
 
 @argh.arg("anchorTranslations", nargs="+")
 def elm_copy(
-    idFrom: "Category identifier to copy into.",
-    idInto: "Category identifier to copy from.",
+    idFrom: "Category identifier to copy from.",
+    idInto: "Category identifier to copy into.",
     anchorTranslations: "A list of R1:R3 pairs to translate the R-groups (In this case, R1 will be replaced with R3)",
 ):
     """ Copies diversity elements from a category into the current one. Overwrites all target cat must be empty."""
