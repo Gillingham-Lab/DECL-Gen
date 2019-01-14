@@ -50,3 +50,7 @@ class Runtime:
     def error_exit(self, e: DECLException):
         print("{t.red}{e}{t.normal}".format(t=self.t, e=e), file=sys.stderr)
         exit(e.exitcode)
+
+    def warning(self, msg: str):
+        print("{t.yellow}{msg}{t.normal}".format(t=self, msg=msg))
+        exit(0)

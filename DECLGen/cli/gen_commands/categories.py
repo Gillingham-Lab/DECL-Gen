@@ -16,13 +16,17 @@ def cat_list():
         cats = r.storage.library.get_categories()
 
         if len(cats) == 0:
-            print("{t.red}No categories defined.{t.normal}".format(t=r.t))
+            r.warning("No categories defined.")
             return
-        table_head = "{t.underline}{t.bold}{id:<10} {name:<50} {anchors:<10}{t.normal}"
-        table_entry = "{t.bold}{id:<10}{t.normal} {name:<50} {anchors:<10}"
-        print(table_head.format(id="id", name="Name", anchors="R-Groups", t=r.t))
+
+        table = r.t.table((10, 50, 10), first_column=True, first_row=True)
+        table.add_row("id", "Name", "R-Groups")
+
         for cat in cats:
-            print(table_entry.format(**cat.describe(), t=r.t))
+            cat_desc = cat.describe()
+            table.add_row(cat_desc["id"], cat_desc["name"], cat_desc["anchors"])
+
+        table.display()
     except LibraryCategoryException as e:
         r.error_exit(e)
 
@@ -34,35 +38,32 @@ def cat_show(id: "Category identifier"):
     try:
         cat = r.storage.library.get_category(id)
         cat_desc = cat.describe()
-        print("{t.bold}Diversity Element Category <{id}>{t.normal}".format(t=r.t, **cat_desc))
-        print("  {t.bold}{title:<20}{t.normal}{value:>20}".format(
-            t=r.t, title="R-Groups", value=cat_desc["anchors"]))
-        print("  {t.bold}{title:<20}{t.normal}{value:>20}".format(
-            t=r.t, title="Codon length", value=cat_desc["codon_length"]))
-        print("  {t.bold}{title:<20}{t.normal}{value:>20}".format(
-            t=r.t, title="Number of elements", value=cat_desc["elements"]))
+
+        print(r.t.highlight("Diversity Element Category {id}: {name}".format(**cat_desc)))
+        dl = r.t.dl(20, 20, highlight_key=True, list_item = "")
+        dl.add_row("R-Groups", cat_desc["anchors"])
+        dl.add_row("Codon length", cat_desc["codon_length"])
+        dl.add_row("Number of elements", cat_desc["elements"])
 
         if type(cat_desc["max_elements"]) is int:
             if int(cat_desc["elements"]) < int(cat_desc["max_elements"]):
-                print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
-                    t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))
+                format = r.t.val_good
             elif int(cat_desc["elements"]) == int(cat_desc["max_elements"]):
-                print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
-                    t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))
+                format = r.t.val_good
             else:
-                print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
-                    t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))
+                format = r.t.val_bad
         else:
-            print("  {t.bold}{title:<20}{t.normal}{t.green}{value:>20}{t.normal}".format(
-                t=r.t, title="Max. of elements", value=cat_desc["max_elements"]))
+            format = r.t.val_good
+
+        dl.add_row("Max. of elements", cat_desc["max_elements"], format)
 
         if "min_codon_length" in cat_desc:
-            print("  {t.bold}{title:<20}{t.normal}{value:>20}".format(
-                t=r.t, title="Codon length needed", value=cat_desc["min_codon_length"]))
-
+            dl.add_row("Codon length needed", cat_desc["min_codon_length"])
         if "reverse_complement" in cat_desc:
-            print("  {t.bold}{title:<20}{t.normal}{value:>20}".format(
-                t=r.t, title="Reverse complement", value=cat_desc["reverse_complement"]))
+            dl.add_row("Reverse complement", cat_desc["reverse_complement"])
+
+        dl.display()
+
     except DECLException as e:
         r.error_exit(e)
 
