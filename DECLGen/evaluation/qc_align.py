@@ -6,6 +6,15 @@ from .metadata import ReadfileMetadata, ReadfileWorkerMetadata
 from .codon import extract
 from ..template import get_codon_coordinates
 
+
+def _match_score(x, y):
+    if y == "N":
+        return 1
+    elif y == x:
+        return 5
+    else:
+        return -4
+
 def _qc_helper(read: Seq, r: ReadfileMetadata, f: float = 0.3) -> Tuple[bool, Optional[List[Seq]]]:
     """
     Helper method for qc_align()
@@ -14,7 +23,8 @@ def _qc_helper(read: Seq, r: ReadfileMetadata, f: float = 0.3) -> Tuple[bool, Op
     :param f:
     :return:
     """
-    alignment = pairwise2.align.localms(read, r.template, 5, -3, -4, -4, one_alignment_only=True)[0]
+    #alignment = pairwise2.align.localms(read, r.template, 5, -3, -4, -4, one_alignment_only=True)[0]
+    alignment = pairwise2.align.localcs(read, r.template, _match_score, -10, -1, one_alignment_only=True)[0]
     max_score = min(len(read), len(r.template)) * 5
 
     codons = extract(alignment[0], get_codon_coordinates(alignment[1]), r.is_reverse())

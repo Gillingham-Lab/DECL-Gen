@@ -135,7 +135,7 @@ def report(
         res = res.merge(res2, on="Codon-Combination", how="outer", suffixes=["L", "R"])
 
         res = res.fillna(0)
-        res[column] = np.sqrt((res[column + "L"] * res[column + "R"]))
+        res[column] = (res[column + "L"] + res[column + "R"]) / 2
 
     # Merge with library
     res = res.sort_values(by=column, ascending=False, kind="mergesort")
