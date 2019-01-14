@@ -15,12 +15,12 @@ class Storage:
     # The library
     library = None
 
-    def __init__(self):
+    def __init__(self, advanced_anchors):
         self.raw_template = None
         self.smiles_template = None
         self.dna_template = None
 
-        self.library = Library(self)
+        self.library = Library(self, advanced_anchors)
 
     def set_template(self, template_string):
         if self.raw_template is not None:

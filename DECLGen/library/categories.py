@@ -261,7 +261,7 @@ class Category:
 
         return c
 
-    def import_elements_from_cat(self, origin: 'Category', anchors: Dict[str, str], updateable=None) -> int:
+    def copy_elements_from(self, origin: 'Category', anchors: Dict[str, str], updateable=None) -> int:
         if len(origin) == 0:
             raise LibraryCategoryEmptyException("The origin category is empty, cannot import from this category.")
 
@@ -297,9 +297,12 @@ class Category:
             # Translate table
             for k in range(len(anchors)):
                 search = "[{}]".format(anchor_origin[k])
-                replce = "[{}]".format(anchor_target[k])
+                replce = "[::{}::]".format(anchor_target[k])
 
                 smiles = smiles.replace(search, replce)
+
+            smiles = smiles.replace("[::", "[")
+            smiles = smiles.replace("::]", "]")
 
             self.add_element(smiles, index)
             added += 1

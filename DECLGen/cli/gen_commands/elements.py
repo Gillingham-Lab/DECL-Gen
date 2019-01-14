@@ -83,6 +83,38 @@ def elm_del(
 def elm_replace():
     pass
 
+@argh.arg("anchorTranslations", nargs="+")
+def elm_copy(
+    idFrom: "Category identifier to copy into.",
+    idInto: "Category identifier to copy from.",
+    anchorTranslations: "A list of R1:R3 pairs to translate the R-groups (In this case, R1 will be replaced with R3)",
+):
+    """ Copies diversity elements from a category into the current one. Overwrites all target cat must be empty."""
+    r = Runtime()
+
+    try:
+        catInto = r.storage.library.get_category(idInto)
+        catFrom = r.storage.library.get_category(idFrom)
+
+        anchors = {}
+        for anchor in anchorTranslations:
+            a = anchor.split(":")
+            aFrom, aInto = a[0], a[1]
+            anchors[aFrom] = aInto
+
+        print("Copying...")
+        progressBar = ProgressBar(r.t)
+        progressBar.start()
+        imported = catInto.copy_elements_from(catFrom, anchors, updateable=progressBar)
+        progressBar.finish()
+        print("Added {} compounds".format(imported))
+
+    except DECLException as e:
+        print()
+        r.error_exit(e)
+
+    r.save()
+
 
 def elm_import(
     id: "Category identifier",

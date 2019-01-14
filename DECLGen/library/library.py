@@ -46,11 +46,13 @@ class Library:
     storage = None
     anchors = None
     anchors_in_use = None
+    advanced_anchors = False
     categories = None
     dna_template = None
 
-    def __init__(self, storage):
+    def __init__(self, storage, advanced_anchors):
         self.storage = storage
+        self.advanced_anchors = advanced_anchors
         self.anchors = []
         self.anchors_in_use = {}
         self.categories = {}
@@ -59,16 +61,22 @@ class Library:
         self.anchors = sorted(anchors)
 
     def change_template(self, new_template: str) -> None:
-        # We must sanitize the template first in case the R group is at the beginning
+        """ Changes the molecular template of the library. Can only be changed if the R groups do not change."""
+        # Save the raw template to provide it back to the user
+        raw_template = new_template
+
+        # First, we change the SMILES string a bit for better internal use.
         template_string = template.sanitize(new_template)
-
-        raw_template = template_string
+        # Secondly, we parse it it.
         smiles_template = template.parse(template_string)
-        anchors = template.get_anchors(template_string)
 
-        if len(self.anchors) > 0 and sorted(anchors) != sorted(self.anchors):
-            raise LibraryTemplateException("Cannot change template with different anchors. You must remove the library first.")
+        if self.advanced_anchors is False:
+            # Make sure the same anchors are used.
+            anchors = template.get_anchors(template_string)
+            if len(self.anchors) > 0 and sorted(anchors) != sorted(self.anchors):
+                raise LibraryTemplateException("Cannot change template with different anchors. You must remove the library first.")
 
+        # Store data internally.
         self.storage.raw_template = raw_template
         self.storage.smiles_template = smiles_template
 
@@ -132,7 +140,7 @@ class Library:
         description = {
             "Template": self.storage.raw_template,
             "DNA-Template": self.get_dna_template(),
-            "R-Groups": ", ".join(self.anchors),
+            "R-Groups": ", ".join(self.anchors) if self.advanced_anchors is False else "Advanced Usage",
             "Library Shape": ", ".join([str(x) for x in self.shape]),
             "Library Size": self.get_size(),
         }
@@ -181,23 +189,26 @@ class Library:
         if len(anchors) == 0:
             raise LibraryCategoryException("You must at least give 1 anchor, none were given.")
 
-        anchors_used = []
-        for anchor in anchors:
-            _check_anchor(anchor)
+        if self.advanced_anchors is False:
+            anchors_used = []
+            for anchor in anchors:
+                _check_anchor(anchor)
 
-            if anchor in self.anchors_in_use:
-                anchors_used.append(anchor)
+                if anchor in self.anchors_in_use:
+                    anchors_used.append(anchor)
 
-        if len(anchors_used) > 0:
-            raise LibraryCategoryException(
-                "Anchors <{}> are already in use.".format(", ".join(anchors_used))
-            )
+            if len(anchors_used) > 0:
+                raise LibraryCategoryException(
+                    "Anchors <{}> are already in use.".format(", ".join(anchors_used))
+                )
 
         # Create the new category
         self.categories[id] = Category(id, name, anchors, codon_length)
-        # Marks anchors as used by cross-referencing Category
-        for anchor in anchors:
-            self.anchors_in_use[anchor] = self.categories[id]
+
+        if self.advanced_anchors is False:
+            # Marks anchors as used by cross-referencing Category
+            for anchor in anchors:
+                self.anchors_in_use[anchor] = self.categories[id]
 
         return True
 
@@ -206,10 +217,11 @@ class Library:
         if not self.has_category(id):
             raise LibraryCategoryNotFoundException("A category with the id <{}> does not exist exists".format(id))
 
-        # Remove used anchors
-        anchors = self.categories[id].get_anchors()
-        for anchor in anchors:
-            del self.anchors_in_use[anchor]
+        if self.advanced_anchors is False:
+            # Remove used anchors
+            anchors = self.categories[id].get_anchors()
+            for anchor in anchors:
+                del self.anchors_in_use[anchor]
 
         # Remove category
         del self.categories[id]
