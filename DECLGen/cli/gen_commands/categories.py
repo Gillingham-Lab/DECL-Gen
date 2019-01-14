@@ -59,6 +59,10 @@ def cat_show(id: "Category identifier"):
         if "min_codon_length" in cat_desc:
             print("  {t.bold}{title:<20}{t.normal}{value:>20}".format(
                 t=r.t, title="Codon length needed", value=cat_desc["min_codon_length"]))
+
+        if "reverse_complement" in cat_desc:
+            print("  {t.bold}{title:<20}{t.normal}{value:>20}".format(
+                t=r.t, title="Reverse complement", value=cat_desc["reverse_complement"]))
     except DECLException as e:
         r.error_exit(e)
 
