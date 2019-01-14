@@ -40,7 +40,7 @@ def cat_show(id: "Category identifier"):
         cat_desc = cat.describe()
 
         print(r.t.highlight("Diversity Element Category {id}: {name}".format(**cat_desc)))
-        dl = r.t.dl(20, 20, highlight_key=True, list_item = "")
+        dl = r.t.dl(20, 20, highlight_key=True, list_item="")
         dl.add_row("R-Groups", cat_desc["anchors"])
         dl.add_row("Codon length", cat_desc["codon_length"])
         dl.add_row("Number of elements", cat_desc["elements"])

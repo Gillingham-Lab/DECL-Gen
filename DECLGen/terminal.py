@@ -42,7 +42,13 @@ class Terminal:
         return "{t.red}{msg}{t.normal}".format(msg=msg, t=self)
 
     def table(self, shape: Sequence[int], first_column: bool = False, first_row: bool = False):
-        return TerminalTable(self, shape, first_column=first_column, first_row=first_row)
+        """ Returns a TerminalTable object to easily display a table. """
+        return TerminalTable(
+            self,
+            shape,
+            first_column=first_column,
+            first_row=first_row
+        )
 
     def dl(
         self,
@@ -51,6 +57,7 @@ class Terminal:
         highlight_key: bool = False,
         list_item: str = "-"
     ):
+        """ Returns a TerminalDefinitionList object to quickly make a definition list. """
         return TerminalDefinitionList(
             self,
             shape_key,
