@@ -73,8 +73,13 @@ class Category:
         if self.codon_length > 0:
             return self.codon_length
         else:
+            all_keys = list(self.elements.keys())
+            if len(all_keys) == 0:
+                return 1
+
+            biggest_key = max(all_keys)
             return max(1, int(math.ceil(
-                math.log(max(1, len(self.elements)), len(codon.CodonConfig.bases))
+                math.log(max(1, biggest_key+1), len(codon.CodonConfig.bases))
             )))
 
     def get_max_elements(self) -> int:
