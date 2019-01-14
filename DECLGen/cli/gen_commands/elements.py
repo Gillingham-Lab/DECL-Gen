@@ -5,16 +5,24 @@ from DECLGen.exceptions import \
     LibraryElementExistsException
 from DECLGen.cli.helpers import ProgressBar
 
-
-def elm_list(id: "Category identifier"):
+@argh.arg("--for-export", default=False)
+def elm_list(
+    id: "Category identifier",
+    for_export: "Format the output for exporting the list." = False,
+):
+    """ Lists all elements of a given diversity element category. """
     r = Runtime()
 
     try:
         cat = r.storage.library.get_category(id)
 
-        print("{t.bold}{a}\t{b}\t{c}{t.normal}".format(a="index", b="codon", c="smiles", t=r.t))
-        for element in cat:
-            print("{}\t{}\t{}".format(element.index, element.codon, element.raw_smiles))
+        if for_export is False:
+            print("{t.bold}{a}\t{b}\t{c}{t.normal}".format(a="index", b="codon", c="smiles", t=r.t))
+            for element in cat:
+                print("{}\t{}\t{}".format(element.index, element.codon, element.raw_smiles))
+        else:
+            for element in cat:
+                print("{}\t{}".format(element.codon, element.raw_smiles))
     except DECLException as e:
         r.error_exit(e)
 
