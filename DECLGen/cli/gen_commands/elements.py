@@ -5,6 +5,7 @@ from DECLGen.exceptions import \
     LibraryElementExistsException
 from DECLGen.cli.helpers import ProgressBar
 
+
 @argh.arg("--for-export", default=False)
 def elm_list(
     id: "Category identifier",
@@ -14,7 +15,7 @@ def elm_list(
     r = Runtime()
 
     try:
-        cat = r.storage.library.get_category(id)
+        cat = r.storage.library.get_resolved_category(id)
 
         if for_export is False:
             print("{t.bold}{a}\t{b}\t{c}{t.normal}".format(a="index", b="codon", c="smiles", t=r.t))
@@ -35,7 +36,7 @@ def elm_show(
     r = Runtime()
 
     try:
-        cat = r.storage.library.get_category(id)
+        cat = r.storage.library.get_resolved_category(id)
         elm = cat.get_element(index)
 
         print("{t.bold}{a}\t{b}\t{c}{t.normal}".format(a="index", b="codon", c="smiles", t=r.t))
@@ -54,12 +55,7 @@ def elm_add(
     r = Runtime()
 
     try:
-        index = int(index)
-    except TypeError:
-        pass
-
-    try:
-        cat = r.storage.library.get_category(id)
+        cat = r.storage.library.get_resolved_category(id)
 
         try:
             cat.add_element(elm_smiles, index)
@@ -94,7 +90,7 @@ def elm_del(
     r = Runtime()
 
     try:
-        cat = r.storage.library.get_category(id)
+        cat = r.storage.library.get_resolved_category(id)
         cat.del_element(index)
     except DECLException as e:
         r.error_exit(e)
@@ -115,8 +111,8 @@ def elm_copy(
     r = Runtime()
 
     try:
-        catInto = r.storage.library.get_category(idInto)
-        catFrom = r.storage.library.get_category(idFrom)
+        catInto = r.storage.library.get_resolved_category(idInto)
+        catFrom = r.storage.library.get_resolved_category(idFrom)
 
         anchors = {}
         for anchor in anchorTranslations:
@@ -146,7 +142,7 @@ def elm_import(
     r = Runtime()
 
     try:
-        cat = r.storage.library.get_category(id)
+        cat = r.storage.library.get_resolved_category(id)
         print("Importing...")
 
         progressBar = ProgressBar(r.t)

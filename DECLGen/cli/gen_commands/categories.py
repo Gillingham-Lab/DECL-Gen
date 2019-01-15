@@ -19,12 +19,12 @@ def cat_list():
             r.warning("No categories defined.")
             return
 
-        table = r.t.table((10, 50, 10), first_column=True, first_row=True)
-        table.add_row("id", "Name", "R-Groups")
+        table = r.t.table((10, 40, 10, 20), first_column=True, first_row=True)
+        table.add_row("id", "Name", "Anchors", "Extra")
 
         for cat in cats:
             cat_desc = cat.describe()
-            table.add_row(cat_desc["id"], cat_desc["name"], cat_desc["anchors"])
+            table.add_row(cat_desc["id"], cat_desc["name"], cat_desc["anchors"], cat_desc["extra"])
 
         table.display()
     except LibraryCategoryException as e:
@@ -40,7 +40,8 @@ def cat_show(id: "Category identifier"):
         cat_desc = cat.describe()
 
         print(r.t.highlight("Diversity Element Category {id}: {name}".format(**cat_desc)))
-        dl = r.t.dl(20, 20, highlight_key=True, list_item="")
+
+        dl = r.t.dl(20, 20, highlight_key=True, list_item="", values_justify_right=True)
         dl.add_row("R-Groups", cat_desc["anchors"])
         dl.add_row("Codon length", cat_desc["codon_length"])
         dl.add_row("Number of elements", cat_desc["elements"])
@@ -61,6 +62,10 @@ def cat_show(id: "Category identifier"):
             dl.add_row("Codon length needed", cat_desc["min_codon_length"])
         if "reverse_complement" in cat_desc:
             dl.add_row("Reverse complement", cat_desc["reverse_complement"])
+
+        if "extra" in cat_desc:
+            dl.add_row("Extra", cat_desc["extra"])
+
 
         dl.display()
 

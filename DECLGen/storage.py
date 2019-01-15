@@ -15,7 +15,7 @@ class Storage:
     # The library
     library = None
 
-    def __init__(self, advanced_anchors: bool, enable_superset_categories: bool):
+    def __init__(self, advanced_anchors: bool, superset_categories: bool):
         self.raw_template = None
         self.smiles_template = None
         self.dna_template = None
@@ -23,7 +23,7 @@ class Storage:
         self.library = Library(
             self,
             advanced_anchors=advanced_anchors,
-            enable_superset_categories=enable_superset_categories
+            superset_categories=superset_categories
         )
 
     def set_template(self, template_string):

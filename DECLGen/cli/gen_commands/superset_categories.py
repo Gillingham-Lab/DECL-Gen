@@ -1,4 +1,5 @@
 import argh
+import sys
 from DECLGen import Runtime
 from DECLGen.exceptions import \
     DECLException, \
@@ -25,36 +26,106 @@ def ssc_add(
     r = Runtime()
 
     try:
-        r.storage.library.add_superset_category(
-            id1, id2, name, anchors,
-            codon1_length=codon1_length, codon1_reverse=codon1_reverse,
-            codon2_length=codon2_length, codon2_reverse=codon2_reverse
-        )
-    except DECLException as e:
-        r.error_exit(e)
-
-    """try:
-        r.storage.library.add_category(id, name, anchors, codon_length)
-        r.storage.library.get_category(id).set_reverse_complement(True if reverse_complement is 1 else False)
+        r.storage.library.add_superset_category(id1, id2, name, anchors,
+                                                codon1_length=codon1_length, codon2_length=codon2_length)
+        r.storage.library.get_category(id1).set_reverse_complement(True if codon1_reverse is 1 else False)
+        r.storage.library.get_category(id2).set_reverse_complement(True if codon2_reverse is 1 else False)
     except LibraryCategoryExistsException:
         if not force_yes:
-            print("{t.red}Warning:{t.normal} This will overwrite the existing DEC and delete all saved DE.".format(t=r.t))
-            print("If you want to edit some parts, use {exec} DEC-edit instead.".format(exec=sys.argv[0]))
+            answer = r.t.decide(
+                "One or more of the ids you've selected are already occupied. "
+                "This will overwrite the existing categories and delete stored diversity elements." + \
+                "If you want to edit some parts, use {exec} DEC-edit instead".format(exec=sys.argv[0]),
+                "Proceed anyway?",
+                ["Y", "n"]
+            )
 
-            while True:
-                answer = input("Proceed anyway (Y/n)? ")
-                answer = answer[0]
-                if answer == "Y" or answer == "n":
-                    break
-        else:
-            answer = "Y"
+            if answer == "Y":
+                if r.storage.library.has_category(id1):
+                    r.storage.library.del_category(id1)
+                if r.storage.library.has_category(id2):
+                    r.storage.library.del_category(id2)
 
-        if answer == "Y":
-            r.storage.library.del_category(id)
-            r.storage.library.add_category(id, name, anchors, codon_length)
-        else:
-            print("Category was not added.")
+                r.storage.library.add_superset_category(id1, id2, name, anchors,
+                                                        codon1_length=codon1_length, codon2_length=codon2_length)
+                r.storage.library.get_category(id1).set_reverse_complement(True if codon1_reverse is 1 else False)
+                r.storage.library.get_category(id1).set_reverse_complement(True if codon2_reverse is 1 else False)
+            else:
+                print("Superset category was not added.")
     except DECLException as e:
         r.error_exit(e)
 
-    #r.save()"""
+    r.save()
+
+
+def ssc_cat_list(
+        ssid: "Superset category identifier.",
+) -> None:
+    """ Lists all registered categories of a superset category."""
+    r = Runtime()
+
+    try:
+        ssc = r.storage.library.get_category(ssid)
+        if ssc.is_superset() is False:
+            raise DECLException("Given identifier must belong to a superset category.")
+
+        table = r.t.table((10, 10, 40), first_column=True, first_row=True)
+        table.add_row("Index", "Codon", "Name")
+
+        for subcat in ssc:
+            table.add_row(subcat.id, subcat.codon, subcat.name)
+
+        table.display()
+    except LibraryCategoryException as e:
+        r.error_exit(e)
+
+
+def ssc_cat_add(
+        ssid: "Superset category identifier.",
+        name: "A human-readable name for the category.",
+        index: "The desired codon or index to encode this sub category. Can also get automatically generated." = None,
+) -> None:
+    """ Adds a category to an existing superset category. """
+    r = Runtime()
+
+    try:
+        ssc = r.storage.library.get_category(ssid)
+        if ssc.is_superset() is False:
+            raise DECLException("Given identifier must belong to a superset category.")
+
+        try:
+            ssc.add_category(name, index)
+        except LibraryCategoryExistsException:
+            answer = r.t.decide(
+                "This category index already exists. This will overwrite the category and remove all elements.",
+                "Proceed anyway?",
+                ["Y", "n"]
+            )
+
+            if answer == "Y":
+                ssc.del_category(index)
+                ssc.add_category(name, index)
+            else:
+                print("No sub category added.")
+    except DECLException as e:
+        r.error_exit(e)
+
+    r.save()
+
+def ssc_cat_del(
+        ssid: "Superset category identifier.",
+        index: "The desired codon or index to encode this sub category."
+) -> None:
+    """ Removes a category from an existing superset category. """
+    r = Runtime()
+
+    try:
+        ssc = r.storage.library.get_category(ssid)
+        if ssc.is_superset() is False:
+            raise DECLException("Given identifier must belong to a superset category.")
+
+        ssc.del_category(index)
+    except DECLException as e:
+        r.error_exit(e)
+
+    r.save()

@@ -12,7 +12,7 @@ from DECLGen.exceptions import \
     LibraryCategoryNotFoundException, \
     LibraryTemplateException, \
     EvaluationException
-from .categories import Category
+from .categories import Category, SupersetCategory, BaseCategory
 from DECLGen import template, codon
 from DECLGen.evaluation import \
     read_loader, \
@@ -47,12 +47,15 @@ class Library:
     anchors = None
     anchors_in_use = None
     advanced_anchors = False
+    superset_categories = False
+
     categories = None
     dna_template = None
 
-    def __init__(self, storage, advanced_anchors):
+    def __init__(self, storage, advanced_anchors: bool, superset_categories: bool):
         self.storage = storage
         self.advanced_anchors = advanced_anchors
+        self.superset_categories = superset_categories
         self.anchors = []
         self.anchors_in_use = {}
         self.categories = {}
@@ -143,6 +146,7 @@ class Library:
             "R-Groups": ", ".join(self.anchors) if self.advanced_anchors is False else "Advanced Usage",
             "Library Shape": ", ".join([str(x) for x in self.shape]),
             "Library Size": self.get_size(),
+            "Superset-Categories": "Enabled" if self.superset_categories is True else "Disabled",
         }
 
         return description
@@ -159,11 +163,43 @@ class Library:
     def get_categories(self) -> List[Category]:
         return list(self.categories.values())
 
+    def get_resolved_category(self, id) -> Category:
+        id_parts = id.split(".", 1)
+
+        if len(id_parts) == 1:
+            if not self.has_category(id):
+                raise LibraryCategoryNotFoundException("Library category <{}> not found".format(id))
+
+            cat = self.categories[id]
+            if cat.is_superset() == True:
+                raise LibraryCategoryException(
+                    "Library category <{ssc.id}> is a superset category. " + \
+                    "You must specify the sub category by adding its index after a . , such as {ssc.id}.AAA".format(
+                        ssc=cat)
+                )
+
+            return cat
+        else:
+            ssc_id, index = id_parts
+            if not self.has_category(ssc_id):
+                raise LibraryCategoryNotFoundException("Superset category <{}> not found".format(ssc_id))
+
+            ssc = self.categories[ssc_id]
+            if ssc.is_superset() == False:
+                raise LibraryCategoryException(
+                    "Library category <{}> is not a superset category. Please refrain from using . in id names".format(
+                        ssc.id)
+                )
+
+            return ssc.get_category(index)
+
     def get_category(self, id) -> Category:
         if not self.has_category(id):
             raise LibraryCategoryNotFoundException("Library category <{}> not found".format(id))
 
         return self.categories[id]
+
+
 
     @property
     def shape(self) -> Tuple[int]:
@@ -181,6 +217,8 @@ class Library:
         :param codon_length: Codon length
         :return:
         """
+        BaseCategory.check_id_validity(id)
+
         # Check if id is already in use
         if self.has_category(id):
             raise LibraryCategoryExistsException("A category with the id <{}> already exists".format(id))
@@ -197,6 +235,53 @@ class Library:
 
         # Register the anchor
         self._register_anchors(id, anchors)
+
+        return True
+
+    def add_superset_category(
+            self,
+            id1: str,
+            id2: str,
+            name: str,
+            anchors: List[str],
+            codon1_length: int,
+            codon2_length: int
+    ) -> None:
+        """
+        Adds a new superset diversity element category (ssc) to the library.
+        :param id1:
+        :param id2:
+        :param name:
+        :param anchors:
+        :param codon1_length:
+        :param codon2_length:
+        :return:
+        """
+        if self.superset_categories is False:
+            raise LibraryCategoryException("You cannot add a superset category if they are not enabled.")
+
+        BaseCategory.check_id_validity(id1)
+        BaseCategory.check_id_validity(id2)
+
+        # Check for id duplicates
+        if self.has_category(id1):
+            raise LibraryCategoryExistsException("A category with the id <{}> already exists".format(id1))
+        if self.has_category(id2):
+            raise LibraryCategoryExistsException("A category with the id <{}> already exists".format(id2))
+        # Check the anchors
+        if len(anchors) == 0:
+            raise LibraryCategoryException("You must at least give 1 anchor; none were given.")
+        self._check_anchors(anchors)
+
+        # Create the new category
+        ssc = SupersetCategory(id1, id2, name, anchors, codon1_length, codon2_length)
+        dmc = ssc.get_subset_category()
+
+        self.categories[id1] = ssc
+        self.categories[id2] = dmc
+
+        # Register the anchor
+        self._register_anchors(id1, anchors)
 
         return True
 
@@ -231,6 +316,8 @@ class Library:
             for anchor in anchors:
                 self.anchors_in_use[anchor] = self.categories[id]
 
+        return None
+
     def del_category(self, id: str) -> bool:
         """
         Removes a category.
@@ -241,10 +328,22 @@ class Library:
         if not self.has_category(id):
             raise LibraryCategoryNotFoundException("A category with the id <{}> does not exist exists".format(id))
 
+        # Prevent dummy categories from getting deleted.
+        cat = self.categories[id]
+        if cat.is_subset():
+            raise LibraryCategoryException(
+                "The category with the id <{}> cannot get deleted directly as it is a subset of {}.".format(
+                    id,
+                    cat.get_superset_category().id
+                )
+            )
+
         self._remove_anchors(id)
 
         # Remove category
         del self.categories[id]
+        if cat.is_superset():
+            del self.categories[cat.get_subset_category().id]
 
         return True
 

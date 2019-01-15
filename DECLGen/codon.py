@@ -1,9 +1,25 @@
+from typing import NewType, Union
+
 class CodonConfig:
     bases = "ATGC"
 
 
 bases = CodonConfig.bases
+CodonInt = NewType("CodonInt", int)
+CodonStr = NewType("CodonStr", str)
+CodonType = NewType("CodonType", Union[CodonStr, CodonInt])
 
+def normalize(index: CodonType) -> CodonInt:
+    try:
+        if type(index) == str and index.isdigit():
+            index = int(index)
+    except ValueError:
+        pass
+
+    if type(index) == str:
+        index = decode(index)
+
+    return index
 
 def reverse(codon: str) -> str:
     codon = codon.upper()

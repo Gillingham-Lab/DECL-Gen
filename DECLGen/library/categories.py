@@ -7,13 +7,109 @@ from DECLGen.exceptions import \
     LibraryCategoryFullException, \
     LibraryCategoryEmptyException, \
     LibraryCategoryAnchorException, \
+    LibraryCategoryExistsException, \
+    LibraryCategoryNotFoundException, \
     LibraryElementException, \
     LibraryElementNotFoundException, \
     LibraryElementExistsException
 from .elements import Element
 
+def _get_new_index(objects: Dict[int, object]) -> codon.CodonInt:
+    if len(objects) > 0:
+        index = max(list(objects.keys())) + 1
+    else:
+        index = 0
+    return index
 
-class Category:
+
+class BaseCategory:
+    @staticmethod
+    def id_is_valid(id):
+        if id.isalnum() and id[0].isalpha():
+            return True
+        return False
+
+    @staticmethod
+    def check_id_validity(id):
+        if BaseCategory.id_is_valid(id) is False:
+            raise LibraryCategoryException(
+                "An id must start with a letter (a-z, A-Z). Any other position must be a letter or a number (0-9).")
+
+    def __init__(self):
+        pass
+
+    def set_name(self, name: str) -> None:
+        """ Sets the descriptive name of this category """
+        self.name = name
+
+    def get_anchors(self) -> List[str]:
+        """ Returns all anchors required within this category. """
+        return self.anchors
+
+    def set_codon_length(self, codon_length: int = 0) -> None:
+        """ Sets the maximum codon length. Setting to 0 makes the codon flexible."""
+        if codon_length < 0:
+            raise LibraryCategoryException("Codon length must be a positive integer.")
+
+        self.codon_length = codon_length
+        return
+
+    def get_codon_length(self) -> int:
+        """ Returns the set codon length if set > 0 or the minimum codon length required if set = 0"""
+        if self.codon_length > 0:
+            return self.codon_length
+        else:
+            all_keys = list(self.elements.keys())
+            if len(all_keys) == 0:
+                return 1
+
+            biggest_key = max(all_keys)
+            return max(1, int(math.ceil(
+                math.log(max(1, biggest_key+1), len(codon.CodonConfig.bases))
+            )))
+
+    def _clear(self):
+        """ Removes all elements from the category. """
+        self.elements = {}
+        self.element_smiles = []
+
+    def get_max_elements(self) -> int:
+        """ Returns the maximum amount of elements available for the current set codon size """
+        if self.codon_length == 0:
+            return -1
+        else:
+            return len(codon.CodonConfig.bases)**self.codon_length
+
+    def _raise_exception_if_full(self, index, what, of):
+        if self.get_max_elements() > 0 and index >= self.get_max_elements():
+            raise LibraryCategoryFullException(
+                "This {what} <{id}> can only store {max} {of} (codon size={codon}).".format(
+                    id=self.id,
+                    max=self.get_max_elements(),
+                    codon=self.get_codon_length(),
+                    what=what,
+                    of=of,
+                )
+            )
+
+    def set_reverse_complement(self, reverse_complement: bool) -> None:
+        self.reverse_complement = reverse_complement
+
+    def is_reverse_complement(self) -> bool:
+        """ Returns true of this category's codon is to be reverse complemented. """
+        if self.reverse_complement is True:
+            return True
+        else:
+            return False
+
+    def is_subset(self) -> bool:
+        return False
+
+    def is_superset(self) -> bool:
+        return False
+
+
+class Category(BaseCategory):
     """
         Represents a diversity element category.
 
@@ -40,11 +136,13 @@ class Category:
     reverse_complement: Optional[bool] = None
 
     def __init__(self, id: str, name: str, anchors: List[str], codon_length: int = 0):
+        super().__init__()
+
         self.id = id
         self.name = name
         self.anchors = anchors
         self.set_codon_length(codon_length)
-        self.clear()
+        self._clear()
 
     def __iter__(self) -> Iterable[Element]:
         for index in self.elements:
@@ -52,58 +150,6 @@ class Category:
 
     def __len__(self) -> int:
         return len(self.elements)
-
-    def get_anchors(self) -> List[str]:
-        """ Returns all anchors required within this category. """
-        return self.anchors
-
-    def set_name(self, name: str) -> None:
-        """ Sets the descriptive name of this category """
-        self.name = name
-
-    def set_codon_length(self, codon_length: int = 0) -> None:
-        """ Sets the maximum codon length. Setting to 0 makes the codon flexible."""
-        if codon_length < 0:
-            raise LibraryCategoryException("Codon length must be a positive integer.")
-
-        self.codon_length = codon_length
-
-    def get_codon_length(self) -> int:
-        """ Returns the set codon length if set > 0 or the minimum codon length required if set = 0"""
-        if self.codon_length > 0:
-            return self.codon_length
-        else:
-            all_keys = list(self.elements.keys())
-            if len(all_keys) == 0:
-                return 1
-
-            biggest_key = max(all_keys)
-            return max(1, int(math.ceil(
-                math.log(max(1, biggest_key+1), len(codon.CodonConfig.bases))
-            )))
-
-    def get_max_elements(self) -> int:
-        """ Returns the maximum amount of elements available for the current set codon size """
-        if self.codon_length == 0:
-            return -1
-        else:
-            return len(codon.CodonConfig.bases)**self.codon_length
-
-    def set_reverse_complement(self, reverse_complement: bool) -> None:
-        """ Sets whether this category's codon is reverse complement or not. """
-        self.reverse_complement = reverse_complement
-
-    def is_reverse_complement(self) -> bool:
-        """ Returns true of this category's codon is to be reverse complemented. """
-        if self.reverse_complement is True:
-            return True
-        else:
-            return False
-
-    def clear(self):
-        """ Removes all elements from the category. """
-        self.elements = {}
-        self.element_smiles = []
 
     def describe(self) -> Dict[str, str]:
         """ Returns a description of the category. """
@@ -115,6 +161,7 @@ class Category:
             "elements": len(self.elements),
             "max_elements": "unlimited" if self.codon_length == 0 else str(self.get_max_elements()),
             "reverse_complement": "Yes" if self.is_reverse_complement() else "No",
+            "extra": "",
         }
 
         if self.codon_length == 0:
@@ -122,25 +169,21 @@ class Category:
 
         return description
 
-    def has_index(self, index: Union[str, int]):
+    def has_index(self, index: codon.CodonType):
         """ Returns true if an index is already in use. """
-        if type(index) == str:
-            index = codon.decode(index)
+        index = codon.normalize(index)
 
         if index in self.elements:
             return True
         else:
             return False
 
-    def get_element(self, index: Union[str, int]) -> Element:
-        """ Returns an element with a given index. """
-        try:
-            index = int(index)
-        except ValueError:
-            pass
+    def clear(self):
+        self.__clear()
 
-        if type(index) == str:
-            index = codon.decode(index)
+    def get_element(self, index: codon.CodonType) -> Element:
+        """ Returns an element with a given index. """
+        index = codon.normalize(index)
 
         if not self.has_index(index):
             raise LibraryElementNotFoundException(
@@ -158,28 +201,15 @@ class Category:
         elm = list(self.elements.values())[list_index]
         return elm
 
-    def add_element(self, elm_smiles: str, index: Union[str, int] = None):
+    def add_element(self, elm_smiles: str, index: Optional[codon.CodonType] = None):
         """ Adds an element by providing a smiles and optionally an index. If the index is not given,
         DECL-Gen tries to automatically generate one. """
-        if type(index) == str:
-            old_index = index
-            index = codon.decode(index)
-        else:
-            old_index = None
         if index is None:
-            if len(self.elements) > 0:
-                index = max(list(self.elements.keys()))+1
-            else:
-                index = 0
+            index = _get_new_index(self.elements)
+        else:
+            index = codon.normalize(index)
 
-        if self.get_max_elements() > 0 and index >= self.get_max_elements():
-            raise LibraryCategoryFullException(
-                "This library category <{id}> can only store {max} compounds (codon size={codon}).".format(
-                    id=self.id,
-                    max=self.get_max_elements(),
-                    codon=self.get_codon_length()
-                )
-            )
+        self._raise_exception_if_full(index, "library category", "elements")
 
         if self.has_index(index):
             raise LibraryElementExistsException(
@@ -208,6 +238,7 @@ class Category:
 
         # Check if the exact same R-group is already contained
         # This has the flaw that C[R1]CC and CCC[R1] are regarded as being different.
+        # @ToDo: Change to add methyl group to all R positions; maybe save methylated canonical smiles, too.
         if elm.raw_smiles in self.element_smiles:
             print("Warning: The exact same element is already contained in this category ({id}, {dna}, {smiles}).".format(
                 id=index,
@@ -221,7 +252,7 @@ class Category:
         self.elements[index] = elm
         self.element_smiles.append(elm.raw_smiles)
 
-    def del_element(self, index: Union[str, int]):
+    def del_element(self, index: codon.CodonType):
         """ Deletes an element from a diversity element category"""
         elm = self.get_element(index)
 
@@ -264,6 +295,9 @@ class Category:
     def copy_elements_from(self, origin: 'Category', anchors: Dict[str, str], updateable=None) -> int:
         if len(origin) == 0:
             raise LibraryCategoryEmptyException("The origin category is empty, cannot import from this category.")
+
+        if isinstance(origin, 'NoElementCategory'):
+            raise LibraryCategoryException("You cannot import elements from the given category.")
 
         anchor_origin = [*anchors.keys()]
         anchor_target = [*anchors.values()]
@@ -310,7 +344,191 @@ class Category:
         return added
 
 
+class NoElementCategory:
+    def add_element(self, elm_smiles: str, index: Union[str, int] = None):
+        raise LibraryCategoryException("You cannot add an element to this category.")
+
+    def del_element(self, index: Union[str, int]):
+        raise LibraryCategoryException("You cannot remove an element from this category.")
+
+    def import_elements(self, filename: str, updateable=None) -> int:
+        raise LibraryCategoryException("You cannot import elements into this category.")
+
+    def copy_elements_from(self, origin: 'Category', anchors: Dict[str, str], updateable=None) -> int:
+        raise LibraryCategoryException("You cannot import elements into this category.")
+
+
+class SubCategory(Category):
+    @property
+    def codon(self):
+        return codon.encode(self.id, self.get_codon_length())
+
+
+class SupersetCategory(BaseCategory, NoElementCategory):
+    id: str
+    name: str
+    anchors: List[str]
+    codon_length: int
+    elements: Dict[str, Element]
+    reverse_complement: Optional[bool]
+    subset: "SubsetCategory"
+    categories: Dict[int, str]
+
+    def __init__(self, id1: str, id2: str, name: str, anchors: List[str], codon1_length: int = 0, codon2_length: int = 0):
+        super().__init__()
+
+        self.id = id1
+        self.name = name
+        self.anchors = anchors
+        self.set_codon_length(codon1_length)
+        self._clear()
+        self.clear_cats()
+
+        self.subset = SubsetCategory(self, id2, codon2_length)
+
+    def __iter__(self) -> Iterable[Element]:
+        for index in self.categories:
+            yield self.categories[index]
+
+    def __len__(self) -> int:
+        sum = 0
+        for subcat in self.categories.values():
+            sum += len(subcat)
+        return sum
+
+    def describe(self) -> Dict[str, str]:
+        """ Returns a description of the category. """
+        description = {
+            "id": self.id,
+            "name": self.name,
+            "anchors": ", ".join(self.anchors),
+            "codon_length": "variable" if self.codon_length == 0 else str(self.codon_length),
+            "elements": len(self.elements),
+            "max_elements": "unlimited" if self.codon_length == 0 else str(self.get_max_elements()),
+            "reverse_complement": "Yes" if self.is_reverse_complement() else "No",
+            "extra": "Superset-category (bound with {})".format(self.subset.id)
+        }
+
+        if self.codon_length == 0:
+            description["min_codon_length"] = str(self.get_codon_length())
+
+        return description
+
+    def get_subset_category(self) -> "SubsetCategory":
+        return self.subset
+
+    def is_superset(self) -> bool:
+        return True
+
+    def clear(self):
+        raise LibraryCategoryException(
+            "You cannot clear a superset category with cat-clear. " + \
+            "Instead, use ssc-clear-cats to remove all categories or ssc-clear-elms to remove all elements from a specific subcategory."
+        )
+
+    def clear_cats(self):
+        self.categories = {}
+
+    def has_index(self, index: codon.CodonInt):
+        if index in self.categories:
+            return True
+        else:
+            return False
+
+    def get_next_index(self) -> codon.CodonInt:
+        return _get_new_index(self.categories)
+
+    def add_category(self, name, index: Optional[codon.CodonType]) -> codon.CodonInt:
+        if index is None:
+            index = self.get_next_index()
+        else:
+            index = codon.normalize(index)
+
+        self._raise_exception_if_full(index, "superset category", "categories")
+
+        if self.has_index(index):
+            raise LibraryCategoryExistsException(
+                "A category with the index <{index}> already exists in the superset category <{cat}>".format(
+                    index=index,
+                    cat=self.id
+                )
+            )
+
+        # Create category
+        cat = SubCategory(index, name, anchors=self.anchors, codon_length=self.subset.codon_length)
+        cat.set_reverse_complement(self.subset.reverse_complement)
+
+        # Add category to list.
+        self.categories[index] = cat
+
+        return index
+
+    def del_category(self, index: codon.CodonType):
+        index = codon.normalize(index)
+
+        del self.categories[index]
+
+    def get_category(self, index: codon.CodonType):
+        index = codon.normalize(index)
+
+        if self.has_index(index) is False:
+            raise LibraryCategoryNotFoundException(
+                "A category with the index <{index}> does not exist in the superset category <{cat}>".format(
+                    index=index,
+                    cat=self.id
+                )
+            )
+
+        return self.categories[index]
 
 
 
+class SubsetCategory(BaseCategory, NoElementCategory):
+    id: str
+    codon_length: int
+    elements: Dict[str, Element]
+    reverse_complement: Optional[bool] = None
+    superset: "SupersetCategory" = None
+
+    def __init__(self, superset: SupersetCategory, id, codon_length):
+        super().__init__()
+
+        self.superset = superset
+        self.id = id
+        self.set_codon_length(codon_length)
+        self._clear()
+
+    def __len__(self) -> int:
+        return 1
+
+    def set_name(self, name: str) -> None:
+        """ Sets the descriptive name of this category """
+        raise LibraryCategoryException("You cannot change the name of a subset category. Please change the name of the corresponding superset.")
+
+    def describe(self) -> Dict[str, str]:
+        """ Returns a description of the category. """
+        description = {
+            "id": self.id,
+            "name": self.superset.name,
+            "anchors": ", ".join(self.superset.anchors),
+            "codon_length": "variable" if self.codon_length == 0 else str(self.codon_length),
+            "elements": len(self.elements),
+            "max_elements": "unlimited" if self.codon_length == 0 else str(self.get_max_elements()),
+            "reverse_complement": "Yes" if self.is_reverse_complement() else "No",
+            "extra": "Subset-category (bound with {})".format(self.superset.id)
+        }
+
+        if self.codon_length == 0:
+            description["min_codon_length"] = str(self.get_codon_length())
+
+        return description
+
+    def get_superset_category(self) -> SupersetCategory:
+        return self.superset
+
+    def is_subset(self) -> bool:
+        return True
+
+    def clear(self):
+        raise LibraryCategoryException("You cannot clear a subset category.")
 

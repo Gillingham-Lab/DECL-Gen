@@ -13,10 +13,15 @@ def lib_info():
     """ Shows information about the library """
     r = Runtime()
 
+    dl = r.t.dl(25, 20, highlight_key=True, list_item="")
+
     description = r.storage.library.describe()
     for key in description:
         if description[key] is not None:
-            print("{t.bold}{key:<15}{t.normal} {value}".format(t=r.t, key=key + ":", value=description[key]))
+            dl.add_row(key, description[key])
+
+    dl.display()
+            #print("{t.bold}{key:<15}{t.normal} {value}".format(t=r.t, key=key + ":", value=description[key]))
 
 
 def lib_edit(
