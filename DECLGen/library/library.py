@@ -189,6 +189,23 @@ class Library:
         if len(anchors) == 0:
             raise LibraryCategoryException("You must at least give 1 anchor, none were given.")
 
+        # Check if anchors are not already in use.
+        self._check_anchors(anchors)
+
+        # Create the new category
+        self.categories[id] = Category(id, name, anchors, codon_length)
+
+        # Register the anchor
+        self._register_anchors(id, anchors)
+
+        return True
+
+    def _check_anchors(self, anchors: List[str]) -> None:
+        """
+        Helper function to check if the given anchors are already in use.
+        :param anchors:
+        :return:
+        """
         if self.advanced_anchors is False:
             anchors_used = []
             for anchor in anchors:
@@ -202,31 +219,47 @@ class Library:
                     "Anchors <{}> are already in use.".format(", ".join(anchors_used))
                 )
 
-        # Create the new category
-        self.categories[id] = Category(id, name, anchors, codon_length)
-
+    def _register_anchors(self, id: str, anchors: List) -> None:
+        """
+        Helper function to register anchors for a category.
+        :param id:
+        :param anchors:
+        :return:
+        """
         if self.advanced_anchors is False:
             # Marks anchors as used by cross-referencing Category
             for anchor in anchors:
                 self.anchors_in_use[anchor] = self.categories[id]
 
-        return True
-
     def del_category(self, id: str) -> bool:
+        """
+        Removes a category.
+        :param id:
+        :return:
+        """
         # Check if id is already in use
         if not self.has_category(id):
             raise LibraryCategoryNotFoundException("A category with the id <{}> does not exist exists".format(id))
 
-        if self.advanced_anchors is False:
-            # Remove used anchors
-            anchors = self.categories[id].get_anchors()
-            for anchor in anchors:
-                del self.anchors_in_use[anchor]
+        self._remove_anchors(id)
 
         # Remove category
         del self.categories[id]
 
         return True
+
+    def _remove_anchors(self, id: str) -> None:
+        """
+        Helper function to remove references from anchor to category to mark them as free.
+        :param id:
+        :return:
+        """
+        if self.advanced_anchors is False:
+            # Get anchors of category
+            anchors = self.categories[id].get_anchors()
+            # Remove reference for each anchor.
+            for anchor in anchors:
+                del self.anchors_in_use[anchor]
 
     def get_molecule_data_by_index(self, elements: Dict[str, int]) -> str:
         fragments = []

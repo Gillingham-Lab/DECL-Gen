@@ -9,12 +9,19 @@ from .terminal import Terminal
 
 class Runtime:
     @staticmethod
-    def create(template: "Template string used for adding in diversity elements", advanced_anchors=False):
+    def create(
+        template: "Template string used for adding in diversity elements",
+        advanced_anchors: bool = False,
+        enable_superset_categories: bool = False,
+    ):
         """ creates a runtime in cwd and returns the instance. """
         if os.path.exists("decl_gen.data"):
             raise LibraryExistsError()
 
-        storage = Storage(advanced_anchors=advanced_anchors)
+        storage = Storage(
+            advanced_anchors=advanced_anchors,
+            enable_superset_categories=enable_superset_categories
+        )
         storage.set_template(template)
 
         with open("decl_gen.data", "wb") as datafile:
