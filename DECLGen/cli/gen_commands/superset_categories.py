@@ -69,11 +69,11 @@ def ssc_cat_list(
         if ssc.is_superset() is False:
             raise DECLException("Given identifier must belong to a superset category.")
 
-        table = r.t.table((10, 10, 40), first_column=True, first_row=True)
-        table.add_row("Index", "Codon", "Name")
+        table = r.t.table((10, 10, 10, 40), first_column=True, first_row=True)
+        table.add_row("Index", "Codon", "Lengh", "Name")
 
         for subcat in ssc:
-            table.add_row(subcat.id, subcat.codon, subcat.name)
+            table.add_row(subcat.id, subcat.codon(ssc), len(subcat), subcat.name)
 
         table.display()
     except LibraryCategoryException as e:

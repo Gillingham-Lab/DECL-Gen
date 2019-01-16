@@ -19,12 +19,23 @@ def cat_list():
             r.warning("No categories defined.")
             return
 
-        table = r.t.table((10, 40, 10, 20), first_column=True, first_row=True)
-        table.add_row("id", "Name", "Anchors", "Extra")
+        table = r.t.table((10, 8, 40, 10, 20), first_column=True, first_row=True)
+        table.add_row("id", "Length", "Name", "Anchors", "Extra")
 
         for cat in cats:
             cat_desc = cat.describe()
-            table.add_row(cat_desc["id"], cat_desc["name"], cat_desc["anchors"], cat_desc["extra"])
+
+            if cat.is_subset():
+                cat_desc["id"] = "({})".format(cat_desc["id"])
+                cat_desc["anchors"] = "-"
+
+            table.add_row(cat_desc["id"], len(cat), cat_desc["name"], cat_desc["anchors"], cat_desc["extra"])
+
+            if cat.is_superset():
+                for subcat in cat:
+                    subcat_desc = subcat.describe()
+                    subcat_desc["id"] = "{}.{}".format(cat_desc["id"], subcat.codon(cat))
+                    table.add_row(subcat_desc["id"], len(subcat), subcat_desc["name"], subcat_desc["anchors"], subcat_desc["extra"])
 
         table.display()
     except LibraryCategoryException as e:
