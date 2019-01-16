@@ -1,6 +1,6 @@
 import math
 import os
-from typing import List, Dict, Union, Iterable, Optional
+from typing import List, Dict, Union, Iterable, Optional, Tuple
 from DECLGen import codon, template
 from DECLGen.exceptions import \
     LibraryCategoryException, \
@@ -359,9 +359,8 @@ class NoElementCategory:
 
 
 class SubCategory(Category):
-    @property
-    def codon(self):
-        return codon.encode(self.id, self.get_codon_length())
+    def codon(self, superset):
+        return codon.encode(self.id, superset.get_codon_length())
 
 
 class SupersetCategory(BaseCategory, NoElementCategory):
@@ -480,6 +479,19 @@ class SupersetCategory(BaseCategory, NoElementCategory):
             )
 
         return self.categories[index]
+
+    def _get_element_by_list_index(self, list_index) -> Tuple[Category, Element]:
+        """ Internal helper method to access elements with an enumerated index. """
+        i = list_index
+
+        for subcat in self:
+            if i >= len(subcat):
+                i -= len(subcat)
+            else:
+                elm = subcat._get_element_by_list_index(i)
+                break
+
+        return subcat, elm
 
 
 

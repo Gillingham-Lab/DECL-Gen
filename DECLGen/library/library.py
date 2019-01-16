@@ -199,8 +199,6 @@ class Library:
 
         return self.categories[id]
 
-
-
     @property
     def shape(self) -> Tuple[int]:
         shape = []
@@ -342,6 +340,7 @@ class Library:
 
         # Remove category
         del self.categories[id]
+        # Remove dummy category if the superset is deleted, too.
         if cat.is_superset():
             del self.categories[cat.get_subset_category().id]
 
@@ -362,15 +361,29 @@ class Library:
 
     def get_molecule_data_by_index(self, elements: Dict[str, int]) -> str:
         fragments = []
-        codons = []
+        codons = {}
         for cat_id in elements:
-            fragments.append(self.categories[cat_id]._get_element_by_list_index(elements[cat_id]).parsed_smiles)
-            codons.append(self.categories[cat_id]._get_element_by_list_index(elements[cat_id]).codon)
+            cat = self.get_category(cat_id)
+
+            if cat.is_subset() is True:
+                continue
+
+            if cat.is_superset() is False:
+                elm = cat._get_element_by_list_index(elements[cat_id])
+                fragments.append(elm.parsed_smiles)
+                codons[cat.id] = elm.codon
+            else:
+                subcat, elm = cat._get_element_by_list_index(elements[cat_id])
+                fragments.append(elm.parsed_smiles)
+                codons[cat.id] = subcat.codon(cat)
+                codons[cat.subset.id] = elm.codon
 
         fragments.append(self.storage.smiles_template)
         smiles = ".".join(fragments)
 
-        return smiles, codons
+        codons_sorted = [codons[x] for x in elements]
+
+        return smiles, codons_sorted
 
     def generate_molecule_queue(self) -> Tuple[list, list]:
         categories_by_size = []
