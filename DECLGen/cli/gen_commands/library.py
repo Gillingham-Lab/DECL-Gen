@@ -7,6 +7,7 @@ from DECLGen import Runtime
 from DECLGen.molecule import Molecule
 from DECLGen.exceptions import DECLException
 from DECLGen.library import Library
+from DECLGen.cli.helpers import ProgressBar
 
 
 def lib_info():
@@ -152,10 +153,16 @@ def lib_generate(
         "heavyAtoms": heavyAtoms if all is False else True,
     }
 
+    print("Starting to generate library.")
+
+    progressBar = ProgressBar(r.t)
+    progressBar.start()
+
     with open("library-properties.csv", "w") as fh:
         csv_file = writer(fh)
         csv_file.writerow(["Codon-Combination"] + elements + ["DNA"] + Molecule.get_data_headers(data_fields))
 
+        N = r.storage.library.get_size()
         i = 0
         j = 0
         with mp.Pool(threads) as pool:
@@ -165,7 +172,11 @@ def lib_generate(
                     j += 1
                     for molecule in molecules:
                         csv_file.writerow(molecule)
+                    progressBar.update(i/N)
+
+                progressBar.finish()
             except Exception as e:
+                progressBar.finish()
                 print("{t.red}Error!\n{e}{t.normal}\n".format(e=e,t=r.t))
 
     if timing:

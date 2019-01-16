@@ -390,7 +390,7 @@ class Library:
         for cat_id in self.categories:
             categories_by_size.append((len(self.categories[cat_id]), cat_id))
 
-        categories_by_size.sort()
+        categories_by_size.sort(reverse=True)
 
         queue = []
         for element1 in range(categories_by_size[0][0]):
