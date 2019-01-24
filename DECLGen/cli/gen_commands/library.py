@@ -152,10 +152,8 @@ def lib_generate(
         "csp3": csp3 if all is False else True,
         "heavyAtoms": heavyAtoms if all is False else True,
     }
-
-    print("Starting to generate library.")
-
-    progressBar = ProgressBar(r.t)
+    
+    progressBar = ProgressBar(r.t, desc="Generating library properties")
     progressBar.start()
 
     with open("library-properties.csv", "w") as fh:

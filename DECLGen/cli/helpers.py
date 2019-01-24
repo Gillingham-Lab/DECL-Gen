@@ -1,9 +1,10 @@
 import math
 import time
+from DECLGen.terminal import Terminal
 
 
 class ProgressBar:
-    term = None
+    term: Terminal = None
     location = None
     width = None
     desc: str = None
@@ -25,10 +26,10 @@ class ProgressBar:
         self.bar_length = self.width - 10
 
         if self.desc is None:
-            self.write("|>{}|{:>3}%\r".format(" "*self.bar_length, "0"))
+            self.write("▓▒{} {:>3}%\r".format(" "*self.bar_length, "0"))
         else:
             self.bar_length -= (len(self.desc) + 2)
-            self.write("{}: |>{}|{:>3}%\r".format(self.desc, " "*self.bar_length, "0"))
+            self.write("{}: ▓▒{} {:>3}%\r".format(self.desc, "░"*self.bar_length, "0"))
 
 
     def update(self, percentage):
@@ -36,16 +37,16 @@ class ProgressBar:
         white_length = self.bar_length - bar_length
 
         if self.desc is None:
-            self.write("|{}>{}|{: >3}%\r".format("="*bar_length, " "*white_length, math.floor(percentage*100)))
+            self.write("▓{}▒{} {: >3}%\r".format("▓"*bar_length, "░"*white_length, math.floor(percentage*100)))
         else:
-            self.write("{}: |{}>{}|{: >3}%\r".format(self.desc, "="*bar_length, " "*white_length, math.floor(percentage*100)))
+            self.write("{}: ▓{}▒{} {: >3}%\r".format(self.desc, "▓"*bar_length, "░"*white_length, math.floor(percentage*100)))
 
 
     def finish(self):
         if self.desc is None:
-            self.write("|{}| Done\n".format("="*(self.bar_length+1)))
+            self.write("▓{}  Done\n".format("▓"*(self.bar_length+1)))
         else:
-            self.write("{}: |{}| Done\n".format(self.desc, "="*(self.bar_length+1)))
+            self.write("{}: ▓{}  Done\n".format(self.desc, "▓"*(self.bar_length+1)))
 
     def __enter__(self):
         self.start()

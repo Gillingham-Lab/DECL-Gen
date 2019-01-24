@@ -34,11 +34,19 @@ class Evaluator:
     valid_codons: int
     valid_counts: int
 
+    plot_format: str
 
-    def __init__(self, *results, progressBar = None):
+
+    def __init__(self, *results, progressBar = None, plot_format = "png"):
         self.count_table = None
         self.progressBar = progressBar
         self.load_counts(results)
+        self.plot_format = plot_format
+
+    def _get_encoding(self):
+        if self.plot_format == "svg":
+            return "image/svg+xml;base64"
+        return "image/png;base64"
 
     def merge_properties(self, properties: pd.DataFrame):
         self.library_size = len(properties)
@@ -169,7 +177,7 @@ class Evaluator:
                 diag_kws=dict(shade=True),
             )
 
-            plt.savefig(image_stream, format="png")
+            plt.savefig(image_stream, format=self.plot_format)
             img_base64 = base64.b64encode(image_stream.getvalue())
             plt.close()
 
@@ -179,7 +187,7 @@ class Evaluator:
         with io.BytesIO() as image_stream:
             ax = sns.kdeplot(self.count_table_reduced["MeanCounts"], shade=True, legend="mean counts")
 
-            plt.savefig(image_stream, format="png")
+            plt.savefig(image_stream, format=self.plot_format)
             img_base64 = base64.b64encode(image_stream.getvalue())
             plt.close()
 
@@ -189,10 +197,10 @@ class Evaluator:
         codon_x = self.codon_rank_columns[codon_x - 1]
         codon_y = self.codon_rank_columns[codon_y - 1]
 
-        df = self.count_table_reduced
+        df = self.count_table_reduced.sort_values(by=[codon_x, codon_y], ascending=[False, False])
 
         if top_hits is not None:
-            df_reduced = df.nlargest(top_hits, "MeanCounts")
+            df_reduced = df.nlargest(top_hits, "MeanCounts").sort_values(by=[codon_x, codon_y], ascending=[False, False])
         else:
             df_reduced = df
 
@@ -203,7 +211,7 @@ class Evaluator:
                 anchored=anchored,
             )
 
-            fig.savefig(image_stream, format="png")
+            fig.savefig(image_stream, format=self.plot_format)
             img_base64 = base64.b64encode(image_stream.getvalue())
             plt.close()
 
@@ -268,11 +276,12 @@ def Scatter3D(
         project_on_y_plane: bool=False,
         project_on_z_plane: bool=False,
         complete_data: pd.DataFrame=None,
-        azim = -120
+        azim = -135,
+        elev = 20,
 ):
     if ax is None:
         fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1, projection='3d', azim=azim)
+        ax = fig.add_subplot(1, 1, 1, projection='3d', azim=azim, elev=elev)
 
     lim_data = complete_data if complete_data is not None else data
     x_lim = lim_data[x].min(), lim_data[x].max()
@@ -291,27 +300,28 @@ def Scatter3D(
         z_projection = ax.scatter(
             data[x], data[y], z_lim[0], c="lightgray", depthshade=False,
             **size_kwargs,
-            zorder=0,
+            zorder=-100,
+            marker="."
         )
 
     if project_on_y_plane is True:
         y_projection = ax.scatter(
             data[x], y_lim[1], data[z], c="lightgray", depthshade=False,
             **size_kwargs,
-            zorder=0,
+            zorder=-100,
         )
 
     if project_on_x_plane is True:
         y_projection = ax.scatter(
             x_lim[1], data[y], data[z], c="lightgray", depthshade=False,
             **size_kwargs,
-            zorder=0,
+            zorder=-100,
         )
 
     if anchored is True:
         for _, point in data.iterrows():
             ax.plot([point[x], point[x]], [point[y], point[y]], [0, point[z]],
-                    color='grey', linestyle='dashed', zorder=-.5, linewidth=1)
+                    color='grey', linestyle='dashed', zorder=-10, linewidth=1)
 
     scatter = ax.scatter(
         data[x],
