@@ -1,5 +1,5 @@
 from .about import about
-from .exctract import extract
+from .extract import extract
 from .compare import compare
 from .report import report
 
