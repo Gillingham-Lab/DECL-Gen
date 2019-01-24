@@ -28,23 +28,38 @@ def sanitize(raw_template: str) -> str:
         if raw_template.startswith("[R"):
             atom_pos = None
             atom_length = None
+            inverse=0
 
-            for atom in raw_template:
+            length = len(raw_template)
+            for i in range(length):
+                atom = raw_template[i]
+
                 if atom in "CNO":
-                    atom_pos = raw_template.find(atom)
-
-                    if raw_template[atom_pos + 1] in "0123456789":
+                    if raw_template[i + 1] in "0123456789":
                         atom_length = 2
                     else:
                         atom_length = 1
 
                     break
+                elif raw_template[i:i+5] == "[C@H]":
+                    atom_length = 5
+                    inverse=1
+                    break
+                elif raw_template[i:i+6] == "[C@@H]":
+                    atom_length = 6
+                    inverse=2
+                    break
 
             raw_template = "{}({}){}".format(
-                raw_template[atom_pos:atom_pos + atom_length],
-                raw_template[0:atom_pos],
-                raw_template[atom_pos + atom_length:]
+                raw_template[i:i + atom_length],
+                raw_template[0:i],
+                raw_template[i + atom_length:]
             )
+
+            if inverse == 1:
+                raw_template = raw_template.replace("C@H", "C@@H", 1)
+            elif inverse == 2:
+                raw_template = raw_template.replace("C@@H", "C@H", 1)
 
         raw_template = re.sub(r"(\([A-Z0-9\(\)\[\]]+\))(\(\[R[0-9]+\]\))", lambda x: "".join([x.group(2), x.group(1)]), raw_template)
         raw_template = re.sub(r"\((\[R([0-9]+)\])\)", lambda x: x.group(1), raw_template)

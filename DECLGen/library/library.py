@@ -5,8 +5,10 @@ from Bio import pairwise2, SeqIO
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 import multiprocessing as mp
+import pandas as pd
 
 from DECLGen.exceptions import \
+    LibraryPropertiesNotPreCalculated, \
     LibraryCategoryException, \
     LibraryCategoryExistsException, \
     LibraryCategoryNotFoundException, \
@@ -494,3 +496,11 @@ class Library:
         return reads_1_template, reads_2_template
 
 
+    def get_calculated_properties(self) -> pd.DataFrame:
+        try:
+            properties = pd.read_csv("library-properties.csv", sep=",")
+        except FileNotFoundError:
+            raise LibraryPropertiesNotPreCalculated(
+                "The library-property file has not been pre-calculated. You must run declGen lib-generate first.")
+
+        return properties

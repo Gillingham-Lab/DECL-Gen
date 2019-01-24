@@ -12,6 +12,10 @@ class LibraryExistsError(DECLException):
     exitcode = 3
 
 
+class LibraryPropertiesNotPreCalculated(DECLException):
+    exitcode = 4
+
+
 class LibraryTemplateException(DECLException):
     exitcode = 10
 
@@ -58,6 +62,13 @@ class LibraryElementExistsException(LibraryCategoryException):
 
 class EvaluationException(DECLException):
     exitcode = 100
+
+
+class EvaluationFileDoesNotExist(DECLException):
+    exitcode = 101
+
+class EvaluationInvalidFileFormat(DECLException):
+    exitcode = 102
 
 
 class MoleculeInvalidSmilesException(ValueError):

@@ -8,11 +8,22 @@ class BaseReport:
     stats: List[Dict[str, str]]
     entries: List[Dict[str, Any]]
 
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, title: str = None):
         self.filename = filename
         self.stats= []
         self.entries = []
         self.title = ""
+
+        if title is not None:
+            self.title = title
+
+    @classmethod
+    def copyFromOther(cls, other: "BaseReport"):
+        instance = cls(other.filename, other.title)
+        instance.stats = other.stats
+        instance.entries = other.entries
+
+        return instance
 
     def set_title(self, title: str):
         self.title = title
@@ -52,3 +63,9 @@ class BaseReport:
         )
 
         return content
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.save()

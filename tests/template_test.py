@@ -46,6 +46,9 @@ class TemplateTestCase(unittest.TestCase):
             ("CCC([R2])C([R1])=O", "CCC[R2]C[R1]=O"),
             ("CCC(N[R2])C([R1])=O", "CCC(N[R2])C[R1]=O"),
             ("CCC(N[R2])([R3])C([R1])=O", "CCC[R3](N[R2])C[R1]=O"),
+            ("[R3][C@@H](OH)CC[R2]", "[C@H][R3](OH)CC[R2]"),
+            ("[R3][C@H](OH)CC[R2]", "[C@@H][R3](OH)CC[R2]"),
+            ("[R3][C@@H](OH)[C@@H](N)C[R2]", "[C@H][R3](OH)[C@@H](N)C[R2]"),
         ]
 
         for a, b in tests:
