@@ -47,7 +47,9 @@ def qc(
     read_1, read_2 = reads
     r1 = metadata.r1
     r2 = metadata.r2
-    quality = float(abs(metadata.quality)) or 0.3
+    quality = 0.3
+    if metadata.quality is not None:
+        quality = float(abs(metadata.quality))
     quality = quality if quality < 1 else 1
 
     # Check quality and fetch adjusted coordinates

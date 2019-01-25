@@ -4,6 +4,7 @@ from Bio.SeqRecord import SeqRecord
 from .codon import extract
 from .metadata import ReadfileMetadata, ReadfileWorkerMetadata
 from .qc_simple import qc as qc_simple
+from .qc_align import qc as qc_align
 
 
 def compare_sequence(seq1: Seq, seq2: Seq, start: int = 0, stop: Optional[int] = None, shift: int = 0):
@@ -88,57 +89,17 @@ def qc(
     r1 = metadata.r1
     r2 = metadata.r2
 
-    quality = int(round(metadata.quality)) or 5
+    # Just assume a quality
+    metadata.quality = 3
 
     r1_pass, r2_pass, codons = qc_simple(reads, metadata)
 
     if _codons_match(codons[0], codons[1]) and r1_pass is True and r2_pass is True:
         return r1_pass, r2_pass, codons
 
-    codons = len(codons[0])
-    size = 3
-
-    # First pass did not work. Lets get creativily looking for indels
-    codons1 = []
-    for x in range((2**size)**codons):
-        shifts = []
-        for y in range(codons):
-            shifts.append(_get_shift_factor(x, y))
-
-        if None in shifts:
-            continue
-
-        r1_pass = _qc_helper(read_1.seq, r1, quality, shifts)
-        if r1_pass is True:
-            coordinates = _adjust_coordinates(r1.coordinates, shifts)
-            codons1.append(extract(read_1.seq, coordinates, r1.is_reverse()))
-
-    codons2 = []
-    for x in range((2**size)**codons):
-        shifts = []
-        for y in range(codons):
-            shifts.append(_get_shift_factor(x, y))
-
-        if None in shifts:
-            continue
-
-        r2_pass = _qc_helper(read_2.seq, r2, quality, shifts)
-        if r2_pass is True:
-            coordinates = _adjust_coordinates(r2.coordinates, shifts)
-            codons2.append(extract(read_2.seq, coordinates, r2.is_reverse()))
-
-    # Find pairs
-    found = []
-    for pair in codons1:
-        if pair in codons2:
-            found.append(pair)
-
-    if len(found) == 1:
-        return True, True, (found[0], found[0])
-    elif len(found) > 1:
-        return True, False, (found[0], found[-1])
-
-    return False, False, ([], [])
+    # If simple did not work, we align and return.
+    metadata.quality = 0.7
+    return qc_align(reads, metadata)
 
 
 

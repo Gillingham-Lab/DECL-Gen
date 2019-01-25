@@ -476,7 +476,7 @@ class Library:
                     all_results += temp_result
 
                 if progressBar is not None:
-                    progressBar.update(temp_result["reads_processed"] / kwargs["max_reads"])
+                    progressBar.update(all_results["reads_processed"] / kwargs["max_reads"])
 
         return all_results
 

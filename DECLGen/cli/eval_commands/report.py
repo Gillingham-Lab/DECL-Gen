@@ -82,35 +82,31 @@ def report(
         html_report.add_stats("Expected average coverage", "{:>10.1f}X".format(rr.all_counts / rr.library_size / rr.replicates))
         html_report.add_stats("Actual average coverage", "{:>10.1f}X".format(rr.valid_counts / rr.library_size / rr.replicates))
 
-        pb = ProgressBar(r.t, desc="Drawing")
-        pb.start()
 
-        # Plotting some meta information
-        html_report.append_plot("Replication scatter", rr.replicates_scatter(), rr._get_encoding())
-        pb.update(0.1)
+        with ProgressBar(r.t, desc="Drawing") as pb:
+            # Plotting some meta information
+            html_report.append_plot("Replication scatter", rr.replicates_scatter(), rr._get_encoding())
+            pb.update(0.1)
 
-        html_report.append_plot("Averaged histogram", rr.count_histogram(), rr._get_encoding())
-        pb.update(0.2)
+            html_report.append_plot("Averaged histogram", rr.count_histogram(), rr._get_encoding())
+            pb.update(0.2)
 
-        if rr.diversity_elements_count == 2:
-            html_report.append_plot("3D Scatter", rr.two_element_3d_scatter(), rr._get_encoding())
-            pb.update(0.3)
+            if rr.diversity_elements_count == 2:
+                html_report.append_plot("3D Scatter", rr.two_element_3d_scatter(), rr._get_encoding())
+                pb.update(0.3)
 
-            html_report.append_plot(
-                "3D Scatter (top 200 hits)",
-                rr.two_element_3d_scatter(top_hits=200, project_on_z_plane=True, anchored=True),
-                rr._get_encoding())
-            pb.update(0.4)
+                html_report.append_plot(
+                    "3D Scatter (top 200 hits)",
+                    rr.two_element_3d_scatter(top_hits=200, project_on_z_plane=True, anchored=True),
+                    rr._get_encoding())
+                pb.update(0.4)
 
-        i = 0
-        for hit in rr.iter_hits(top):
-            html_report.add_entry(hit.rank, hit.counts, hit.codons, hit.smiles, hit.draw())
-            i += 1
+            i = 0
+            for hit in rr.iter_hits(top):
+                html_report.add_entry(hit.rank, hit.counts, hit.codons, hit.smiles, hit.draw())
+                i += 1
 
-            pb.update(0.5 + 0.5*(i/top))
-
-        pb.finish()
-
+                pb.update(0.5 + 0.5*(i/top))
 
         text_report = TextReport.copyFromOther(html_report)
 
