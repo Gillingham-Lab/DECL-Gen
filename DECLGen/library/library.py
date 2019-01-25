@@ -406,9 +406,10 @@ class Library:
                                     r2: Optional[str] = None,
                                     compare_n: int = 5,
                                     threads: int = 8,
-                                    blocksize: int = 10,
+                                    blocksize: int = None,
                                     method: str = "simple",
                                     quality: Optional[Union[int, float]] = None,
+                                    progressBar = None,
                                     **kwargs
                                     ) -> None:
         """
@@ -421,6 +422,19 @@ class Library:
         :param method: Evaluation method. A choice of qc.all.
         :return:
         """
+
+        # Count lines
+        if "max_reads" not in kwargs or kwargs["max_reads"] is None:
+            with open(r1, "r") as fh:
+                lines = 0
+                for line in fh:
+                    lines += 1
+                lines //= 4
+            kwargs["max_reads"] = lines
+
+        if blocksize is None:
+            blocksize = min(100_000, kwargs["max_reads"]//(threads-1))
+
         template_f = Seq(self.get_formatted_stub_dna_template().upper(), alphabet=IUPAC.ambiguous_dna)
         template_r = template_f.reverse_complement()
 
@@ -460,6 +474,9 @@ class Library:
                     all_results = temp_result
                 else:
                     all_results += temp_result
+
+                if progressBar is not None:
+                    progressBar.update(temp_result["reads_processed"] / kwargs["max_reads"])
 
         return all_results
 

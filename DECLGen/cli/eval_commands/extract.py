@@ -5,6 +5,7 @@ from timeit import default_timer as timer
 from DECLGen import Runtime
 from DECLGen.exceptions import LibraryNoDNATemplateException
 from DECLGen.evaluation.qc import Type
+from DECLGen.cli.helpers import ProgressBar
 
 @argh.arg("r2", nargs="?")
 @argh.arg("--method", choices=Type.all)
@@ -18,7 +19,7 @@ def extract(
         threads: "Number of threads" = 8,
         method = Type.default,
         quality: "Quality number whose purpose changes depending on the method used." = None,
-        blocksize: "Size of reads to load before sending them to a thread" = 10000,
+        blocksize: "Size of reads to load before sending them to a thread" = None,
         result_file: "Filename of the results. Generated automatically if not given" = None,
         max_reads = None,
         timing = False,
@@ -34,15 +35,17 @@ def extract(
         a = LibraryNoDNATemplateException("You have not defined a DNA template.")
         r.error_exit(a)
 
-    result = r.storage.library.evaluate_sequencing_results(
-        r1,
-        r2,
-        threads=threads,
-        blocksize=blocksize,
-        method=method,
-        quality=quality,
-        max_reads=max_reads
-    )
+    with ProgressBar(r.t, desc="Reading reads") as progressBar:
+        result = r.storage.library.evaluate_sequencing_results(
+            r1,
+            r2,
+            threads=threads,
+            blocksize=blocksize,
+            method=method,
+            quality=quality,
+            max_reads=max_reads,
+            progressBar=progressBar,
+        )
 
     # Save result
     if result_file is None:
