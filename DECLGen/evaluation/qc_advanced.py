@@ -89,8 +89,8 @@ def qc(
     r1 = metadata.r1
     r2 = metadata.r2
 
-    # Just assume a quality
-    metadata.quality = 3
+    quality = metadata.quality
+    metadata.quality = quality//1
 
     r1_pass, r2_pass, codons = qc_simple(reads, metadata)
 
@@ -98,7 +98,7 @@ def qc(
         return r1_pass, r2_pass, codons
 
     # If simple did not work, we align and return.
-    metadata.quality = 0.7
+    metadata.quality = quality%1
     return qc_align(reads, metadata)
 
 

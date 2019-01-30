@@ -47,12 +47,14 @@ def report(
         r.error_exit(e)
 
     with ProgressBar(r.t, desc="Loading files") as progressBar:
-        rr = Evaluator(*result, progressBar=progressBar, plot_format=plot_format)
-
-    rr.merge_properties(library_properties)
+        rr = Evaluator(*result, progressBar=progressBar, plot_format=plot_format, properties=library_properties)
 
     filename_path, filename_base, filename_report, filename_radical = _parse_target_filename(save_as, result[0])
 
+    # Save csv file
+    rr.save_df(os.path.join(filename_path, filename_radical + "-valid.csv"))
+
+    # Plot files
     with HTMLReport(filename_report, filename_base) as html_report:
         html_report.add_stats("Replicates", "{:>10d}".format(rr.replicates))
         html_report.add_stats("Total counts", "{:>10.0f}".format(rr.all_counts))
@@ -79,6 +81,7 @@ def report(
                                   (rr.library_size - rr.valid_codons) / rr.library_size * 100
                                 )
                               )
+        html_report.add_stats("Expected missing", "{:>10.0f}".format(rr.expected_missing))
         html_report.add_stats("Expected average coverage", "{:>10.1f}X".format(rr.all_counts / rr.library_size / rr.replicates))
         html_report.add_stats("Actual average coverage", "{:>10.1f}X".format(rr.valid_counts / rr.library_size / rr.replicates))
 
@@ -86,6 +89,9 @@ def report(
         with ProgressBar(r.t, desc="Drawing") as pb:
             # Plotting some meta information
             html_report.append_plot("Replication scatter", rr.replicates_scatter(), rr._get_encoding())
+            pb.update(0.05)
+
+            html_report.append_plot("Var vs mean", rr.variance_vs_mean(), rr._get_encoding())
             pb.update(0.1)
 
             html_report.append_plot("Averaged histogram", rr.count_histogram(), rr._get_encoding())
@@ -100,6 +106,15 @@ def report(
                     rr.two_element_3d_scatter(top_hits=200, project_on_z_plane=True, anchored=True),
                     rr._get_encoding())
                 pb.update(0.4)
+            elif rr.diversity_elements_count == 3:
+                html_report.append_plot(
+                    "3D Scatter (top 1000 hits)",
+                    rr.three_element_3d_scatter(top_hits=1000, project_on_z_plane=True, anchored=True),
+                    rr._get_encoding())
+                pb.update(0.3)
+
+                pb.update(0.4)
+
 
             i = 0
             for hit in rr.iter_hits(top):

@@ -24,6 +24,15 @@ setup(
     packages=find_packages(),
     install_requires=[
         "argh",
+        "colorama",
+        "numpy",
+        "scipy",
+        "pandas",
+        "seaborn",
+        "BioPython",
+        "PIL",
+        "rdkit",
+        "statsmodels",
     ],
 
     entry_points={
