@@ -12,4 +12,4 @@ __author_email__ = "basilius.sauter@unibas.ch"
 __url__ = "https://github.com/Gillingham-Lab/DECL-Gen"
 
 __version__ = "v1.0-beta"
-__year__ = "2018"
+__year__ = "2018-2019"

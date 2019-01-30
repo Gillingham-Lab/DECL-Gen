@@ -13,7 +13,7 @@ build_exe_options = {
 
 setup(
     name="DECL-Gen",
-    version="v1.0-alpha",
+    version="v1.0-beta",
     description="A tool to generate DNA encoded libraries from fragments",
     url="https://github.com/Gillingham-Lab/DECL-Gen",
 
@@ -30,7 +30,7 @@ setup(
         "pandas",
         "seaborn",
         "BioPython",
-        "PIL",
+        "pillow",
         "rdkit",
         "statsmodels",
     ],
