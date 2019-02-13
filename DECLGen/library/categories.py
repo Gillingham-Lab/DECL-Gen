@@ -242,7 +242,7 @@ class Category(BaseCategory):
         if elm.raw_smiles in self.element_smiles:
             print("Warning: The exact same element is already contained in this category ({id}, {dna}, {smiles}).".format(
                 id=index,
-                dna=old_index,
+                dna=index,
                 smiles=elm_smiles
             ))
             for k in self.elements:
