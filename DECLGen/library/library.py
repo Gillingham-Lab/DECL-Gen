@@ -410,6 +410,7 @@ class Library:
                                     method: str = "simple",
                                     quality: Optional[Union[int, float]] = None,
                                     progressBar = None,
+                                    no_auto_detection=False,
                                     **kwargs
                                     ) -> None:
         """
@@ -438,7 +439,11 @@ class Library:
         template_f = Seq(self.get_formatted_stub_dna_template().upper(), alphabet=IUPAC.ambiguous_dna)
         template_r = template_f.reverse_complement()
 
-        r1_template, r2_template = self._assign_template(template_f, template_r, r1, r2, n=compare_n)
+        if no_auto_detection is not False:
+            r1_template, r2_template = self._assign_template(template_f, template_r, r1, r2, n=compare_n)
+        else:
+            r1_template = template_f
+            r2_template = template_r
 
         n_positions_r1 = template.get_codon_coordinates(r1_template)
         n_positions_r2 = template.get_codon_coordinates(r2_template)
@@ -481,6 +486,7 @@ class Library:
         return all_results
 
     def _assign_template(self, template_f: Seq, template_r: Seq, r1: str, r2: str, n: int = 5):
+        """ Tries to auto-detect which file is the forward read and which the reverse. """
         reads_1 = SeqIO.parse(r1, "fastq")
         reads_2 = SeqIO.parse(r2, "fastq") if r2 is not None else None
 

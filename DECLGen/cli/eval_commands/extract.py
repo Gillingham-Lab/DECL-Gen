@@ -13,6 +13,7 @@ from DECLGen.cli.helpers import ProgressBar
 @argh.arg("--quality", type=float)
 @argh.arg("--max-reads", type=int)
 @argh.arg("--timing", default=False)
+@argh.arg("--no-auto-detection", default=False)
 def extract(
         r1: "Fastq file containing forward reads",
         r2: "Fastq file containing reverse reads from paired read, if available",
@@ -24,6 +25,7 @@ def extract(
         max_reads = None,
         timing = False,
         save_failed: "Save failed reads" = False,
+        no_auto_detection = False,
 ):
     r = Runtime()
 
@@ -45,6 +47,7 @@ def extract(
             quality=quality,
             max_reads=max_reads,
             progressBar=progressBar,
+            no_auto_detection=no_auto_detection,
         )
 
     # Save result
