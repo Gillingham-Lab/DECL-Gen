@@ -31,7 +31,6 @@ setup(
         "seaborn",
         "BioPython",
         "pillow",
-        "rdkit",
         "statsmodels",
     ],
 
@@ -39,6 +38,7 @@ setup(
         "console_scripts": [
             'declGen=DECLGen.cli.generate:main',
             'declEval=DECLGen.cli.evaluate:main',
+            'declTools=DECLGen.cli.tools:main',
         ]
     }
 )
