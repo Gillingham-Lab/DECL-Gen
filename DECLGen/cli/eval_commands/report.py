@@ -47,7 +47,7 @@ def report(
         r.error_exit(e)
 
     with ProgressBar(r.t, desc="Loading files") as progressBar:
-        rr = Evaluator(*result, progressBar=progressBar, plot_format=plot_format, properties=library_properties)
+        rr = Evaluator(*result, progress_bar=progressBar, plot_format=plot_format, properties=library_properties)
 
     filename_path, filename_base, filename_report, filename_radical = _parse_target_filename(save_as, result[0])
 
