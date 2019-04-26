@@ -22,10 +22,10 @@ def extract(
         quality: "Quality number whose purpose changes depending on the method used." = None,
         blocksize: "Size of reads to load before sending them to a thread" = None,
         result_file: "Filename of the results. Generated automatically if not given" = None,
-        max_reads = None,
-        timing = False,
+        max_reads: "Maximum amount of reads to read in. Good for quick data inspection." = None,
+        timing: "Measure the timing" = False,
         save_failed: "Save failed reads" = False,
-        no_auto_detection = False,
+        no_auto_detection: "Deactivates the autodetection of which file is forward and which is the reverse read." = False,
 ):
     r = Runtime()
 
@@ -63,6 +63,9 @@ def extract(
 
     with open(result_file[:-4] + ".log", "w") as fh:
         fh.write(str(result))
+        if timing:
+            e = timer()
+            print("\nTime required: {:.2f}\n".format(e-s))
 
     if save_failed:
         with open("".join([os.path.basename(r1).split(".")[0], ".1.failed"]), "w") as fr1, \

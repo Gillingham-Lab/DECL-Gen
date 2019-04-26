@@ -8,13 +8,17 @@ _search_pattern = r"\[R([0-9]+)\]"
 
 
 def sanitize(raw_template: str) -> str:
-    """ This method tries to sanitize a raw_template by moving the R-group to a better position.
+    """
+    This method tries to sanitize a raw_template by moving the R-group to a better position.
 
     R-groups are essentially placeholders for SMILES connections commonly used to form rings. As such, they must
-    always be placed after an atom, or else the connection would not work.
+    always be placed after an atom, or else the connection would not work or start from the wrong atom.
 
     This method tries to correct these cases:
         sanitize("[R1]CCC") -> "C[R1]CC"
+
+    :param raw_template: The raw template to sanitize
+    :return: The sanitized template.
     """
     if raw_template.find(".") >= 0:
         template_parts = raw_template.split(".")
@@ -68,11 +72,20 @@ def sanitize(raw_template: str) -> str:
 
 
 def count_anchors(raw_template: str) -> int:
+    """
+    Returns the number of anchors in a given molecular scaffold.
+    :param raw_template:
+    :return:
+    """
     return len(re.findall(_search_pattern, raw_template))
 
 
 def get_anchors(raw_template: str) -> List[str]:
-    """ Returns all anchors defined in the scaffold. """
+    """
+    Returns the numbers of anchors in a given molecular scaffold.
+    :param raw_template:
+    :return:
+    """
     return sorted(["R{}".format(x) for x in re.findall(_search_pattern, raw_template)])
 
 
