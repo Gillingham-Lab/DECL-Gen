@@ -112,6 +112,27 @@ def ssc_cat_add(
 
     r.save()
 
+def ssc_cat_reindex(
+        ssid: "Superset category identifier.",
+        current_index: "The current codon or index of a sub category.",
+        new_index: "The new codon or index of the sub category. Must not exist yet.",
+) -> None:
+    """ Moves a category from a superset category to a newly given index. """
+    r = Runtime()
+
+    try:
+        ssc = r.storage.library.get_category(ssid)
+        if ssc.is_superset() is False:
+            raise DECLException("Given identifier must belong to a superset category.")
+
+        ssc.reindex_category(current_index, new_index)
+    except DECLException as e:
+        r.error_exit(e)
+
+    ssc_cat_list(ssid)
+
+    r.save()
+
 def ssc_cat_del(
         ssid: "Superset category identifier.",
         index: "The desired codon or index to encode this sub category."

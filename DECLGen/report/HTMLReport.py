@@ -33,7 +33,8 @@ class HTMLReport(BaseReport):
         return "".join(other)
 
     def append_plot(self, title, image, encoding = None):
-        self.plots.append((title, image.decode("ASCII"), "image/png;base64" if encoding is None else encoding))
+        if image is not None:
+            self.plots.append((title, image.decode("ASCII"), "image/png;base64" if encoding is None else encoding))
 
 
 

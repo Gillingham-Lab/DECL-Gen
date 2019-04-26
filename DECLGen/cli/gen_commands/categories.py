@@ -165,7 +165,7 @@ def cat_clear(id: "Category identifier"):
     r = Runtime()
 
     try:
-        cat = r.storage.library.get_category(id)
+        cat = r.storage.library.get_resolved_category(id)
         cat.clear()
     except DECLException as e:
         r.error_exit(e)

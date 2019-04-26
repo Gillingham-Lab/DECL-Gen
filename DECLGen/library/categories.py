@@ -179,7 +179,7 @@ class Category(BaseCategory):
             return False
 
     def clear(self):
-        self.__clear()
+        self._clear()
 
     def get_element(self, index: codon.CodonType) -> Element:
         """ Returns an element with a given index. """
@@ -479,6 +479,31 @@ class SupersetCategory(BaseCategory, NoElementCategory):
             )
 
         return self.categories[index]
+
+    def reindex_category(self, oldIndex: codon.CodonType, newIndex: codon.CodonType):
+        oldIndex = codon.normalize(oldIndex)
+        newIndex = codon.normalize(newIndex)
+
+        if self.has_index(oldIndex) is False:
+            raise LibraryCategoryNotFoundException(
+                "A category with the index <{oldIndex}> does not exist in the superset category <{cat}>".format(
+                    oldIndex=oldIndex,
+                    cat=self.id
+                )
+            )
+
+        if self.has_index(newIndex) is True:
+            raise LibraryCategoryNotFoundException(
+                "A category with the index <{newIndex}> does not exist in the superset category <{cat}>".format(
+                    newIndex=newIndex,
+                    cat=self.id
+                )
+            )
+
+        self.categories[oldIndex].id = newIndex
+        self.categories[newIndex] = self.categories[oldIndex]
+        del self.categories[oldIndex]
+
 
     def _get_element_by_list_index(self, list_index) -> Tuple[Category, Element]:
         """ Internal helper method to access elements with an enumerated index. """

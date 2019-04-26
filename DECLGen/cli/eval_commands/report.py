@@ -125,4 +125,6 @@ def report(
 
         text_report = TextReport.copyFromOther(html_report)
 
+    html_report.save()
+
     print(text_report)

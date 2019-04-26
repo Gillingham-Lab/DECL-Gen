@@ -157,6 +157,12 @@ class Evaluator:
             self.count_table_purified[new_col] = self.count_table_purified[de_col].apply(decode) + 1
             self.codon_rank_columns.append(new_col)
 
+        # If there is only 1 replicate, we need to manually set a few columns to 0
+        if self.replicates == 1:
+            self.count_table_purified["VarEnrichment"] = 0
+            self.count_table_purified["StdEnrichment"] = 0
+            self.count_table_purified["StdDevCounts"] = 0
+
         # Create a copy of the table where non-overlapping are removed.
         self.count_table_reduced = self.count_table_purified.dropna()
         self.count_table_reduced = self.count_table_reduced.sort_values(by=["MeanCounts", "StdDevCounts"], ascending=[False, True])
@@ -495,10 +501,6 @@ def Scatter3D(
         azim = -135,
         elev = 20,
 ):
-    if ax is None:
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1, projection='3d', azim=azim, elev=elev)
-
     lim_data = complete_data if complete_data is not None else data
     x_lim = lim_data[x].min(), lim_data[x].max()
     y_lim = lim_data[y].min(), lim_data[y].max()
@@ -506,11 +508,37 @@ def Scatter3D(
 
     color_kwargs = {}
     if c is not None:
-        color_kwargs = {"c": data[c], "cmap": "plasma", "norm": colors.PowerNorm(gamma=1),}
+        color_kwargs = {"c": data[c], "cmap": "plasma", "norm": colors.PowerNorm(gamma=1), }
 
     size_kwargs = {}
     if s is not None:
         size_kwargs = {"s": (data[s] / data[s].max()) ** 2 * 100}
+
+    # If one dimension is one-dimensional, we just plot a 2d scatter of the remaining two.
+    if (x_lim[1] - x_lim[0] == 0 or y_lim[1] - y_lim[0] == 0 or z_lim[1] - z_lim[0] == 0):
+        # do something else
+        if x_lim[1] - x_lim[0] == 0:
+            x_lim = z_lim
+            x = z
+        elif y_lim[1] - y_lim[0] == 0:
+            y_lim = z_lim
+            y = z
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+
+        ax.scatter(data[x], data[y],
+            **color_kwargs,
+            **size_kwargs,
+        )
+
+        return fig, ax
+
+    if ax is None:
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1, projection='3d', azim=azim, elev=elev)
+
+
 
     if project_on_z_plane is True:
         z_projection = ax.scatter(
