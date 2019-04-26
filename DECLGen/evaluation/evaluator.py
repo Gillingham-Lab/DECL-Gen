@@ -333,7 +333,7 @@ class Evaluator:
 
         with io.BytesIO() as image_stream:
             ax = sns.regplot(x="MeanEnrichment", y="VarEnrichment", data=self.count_table_purified)
-            ax = sns.regplot(x="MeanEnrichment", y="MeanEnrichment", data=self.count_table_purified, scatter=False, ax=ax, label=False)
+            #ax = sns.regplot(x="MeanEnrichment", y="MeanEnrichment", data=self.count_table_purified, scatter=False, ax=ax, label=False)
 
             plt.savefig(image_stream, format=self.plot_format)
             img_base64 = base64.b64encode(image_stream.getvalue())
