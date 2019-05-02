@@ -37,7 +37,9 @@ def extract(
         a = LibraryNoDNATemplateException("You have not defined a DNA template.")
         r.error_exit(a)
 
+    # Create a progress bar that can be updated.
     with ProgressBar(r.t, desc="Reading reads") as progressBar:
+        # Evaluates the sequencing results using multiple threads.
         result = r.storage.library.evaluate_sequencing_results(
             r1,
             r2,
@@ -54,6 +56,7 @@ def extract(
     if result_file is None:
         result_file = "".join([os.path.basename(r1).split(".")[0], ".result.csv"])
 
+    # Write the results to a .csv file
     with open(result_file, "w") as fh:
         fh.write("{0}\t{1}\n".format("Codon-Combination", "Count"))
 
@@ -61,12 +64,15 @@ def extract(
         for codon in codon_list:
             fh.write("{0}\t{1}\n".format("-".join([str(x) for x in codon]), codon_list[codon]))
 
+    # Write the log file, including the time required if requested.
     with open(result_file[:-4] + ".log", "w") as fh:
         fh.write(str(result))
+
         if timing:
             e = timer()
             print("\nTime required: {:.2f}\n".format(e-s))
 
+    # Write the failed-to-use reads in separate files as well. Might be useful for analysis later.
     if save_failed:
         with open("".join([os.path.basename(r1).split(".")[0], ".1.failed"]), "w") as fr1, \
             open("".join([os.path.basename(r1).split(".")[0], ".2.failed"]), "w") as fr2:
@@ -74,6 +80,7 @@ def extract(
                 fr1.write(str(read1) + "\n")
                 fr2.write(str(read2) + "\n")
 
+    # Take the full timing.
     if timing:
         e = timer()
 
