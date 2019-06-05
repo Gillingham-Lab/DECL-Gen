@@ -272,6 +272,10 @@ class Evaluator:
             result["MeanEnrichment"] = result[["Enrichment{}".format(i) for i in column_numbers]].mean(axis=1)
             result["StdEnrichment"] = result[["Enrichment{}".format(i) for i in column_numbers]].std(axis=1)
 
+            median = result["MeanEnrichment"].quantile()
+            result["MeanEnrichment"] /= median if median > 0 else result["MeanEnrichment"].mean()
+            result["StdEnrichment"] /= median if median > 0 else result["MeanEnrichment"].mean()
+
             # Recalculate the enrichment confidence boundaries of the mean enrichment. I'm not sure if this is valid, but its currently the best approach.
             lower, upper = estimate_enrichment_confidence_boundaries(result["MeanEnrichment"], 1, 1)
             result["MeanEnrichment_Lower"] = lower

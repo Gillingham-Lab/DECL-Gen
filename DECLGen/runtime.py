@@ -38,7 +38,12 @@ class Runtime:
         os.unlink("decl_gen.data")
 
     def __init__(self, anew=False):
-        """ loads a runtime from cwd """
+        """
+        Constructor.
+
+        Loads the library from decl_gen.data using pickle.load() and initializes the Terminal.
+        :param anew:
+        """
 
         if not os.path.exists("decl_gen.data"):
             raise LibraryNotInitializedError()
@@ -51,13 +56,30 @@ class Runtime:
         self.t = Terminal()
 
     def save(self):
+        """
+        Saves the library to decl_gen.data using pickle.dump().
+        :return:
+        """
         with open("decl_gen.data", "wb") as datafile:
             dump(self.storage, datafile, 4)
 
     def error_exit(self, e: DECLException):
-        print("{t.red}{e}{t.normal}".format(t=self.t, e=e), file=sys.stderr)
+        """
+        Exits the Runtime for a DECLException and prints the errorcode as well as the error message.
+        :param e:
+        :return:
+        """
+        msg = "{e} (Code: {e.exitcode}".format(e)
+        msg = self.t.val_bad(msg)
+        print(msg, file=sys.stderr)
+
         exit(e.exitcode)
 
     def warning(self, msg: str):
-        print("{t.yellow}{msg}{t.normal}".format(t=self, msg=msg))
+        """
+        Prints a warning and exists.
+        :param msg:
+        :return:
+        """
+        print(self.t.val_warning(msg))
         exit(0)
