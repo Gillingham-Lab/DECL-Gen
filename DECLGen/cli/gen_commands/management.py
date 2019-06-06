@@ -7,15 +7,15 @@ from DECLGen.exceptions import LibraryExistsError, LibraryNotInitializedError
 @argh.arg("--enable-advanced-anchors", default=False)
 @argh.arg("--enable-superset-categories", default=False)
 def init(
-    template: "A Smiles-String describing the chemical structure of the template. Anchor points for elements must be added as [Rn], where n is a number between 1 and 9",
+    scaffold: "A Smiles-String describing the chemical structure of the chemical scaffold. Anchor points for elements must be added as [Rn], where n is a number between 1 and 9",
     enable_advanced_anchors: "Initializes the library in the advanced anchor mode." = False,
-    enable_superset_categories: "EXPERIMENTAL: Allows to use superset categories (ssc)" = False,
+    enable_superset_categories: "EXPERIMENTAL: Allows to use superset diversity point (SSP)" = False,
 ) -> None:
     """Initializes a decl-gen datafile in the current directory."""
 
     try:
         r = Runtime.create(
-            template=template,
+            template=scaffold,
             advanced_anchors=enable_advanced_anchors,
             superset_categories=enable_superset_categories,
         )

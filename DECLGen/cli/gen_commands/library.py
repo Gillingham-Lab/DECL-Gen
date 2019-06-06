@@ -22,7 +22,6 @@ def lib_info():
             dl.add_row(key, description[key])
 
     dl.display()
-            #print("{t.bold}{key:<15}{t.normal} {value}".format(t=r.t, key=key + ":", value=description[key]))
 
 
 def lib_edit(

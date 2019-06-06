@@ -143,7 +143,7 @@ class Library:
 
     def describe(self) -> Dict[str, Union[str, None]]:
         description = {
-            "Template": self.storage.raw_template,
+            "Chemical Scaffold": self.storage.raw_template,
             "DNA-Template": self.get_dna_template(),
             "R-Groups": ", ".join(self.anchors) if self.advanced_anchors is False else "Advanced Usage",
             "Library Shape": ", ".join([str(x) for x in self.shape]),
