@@ -8,7 +8,7 @@ from DECLGen.exceptions import \
     LibraryCategoryNotFoundException
 
 @argh.arg("anchors", nargs="+")
-def ssc_add(
+def ssp_add(
     id1: "Desired primary category identifier. Used to identify the superset in the DNA strand.",
     id2: "Desired secondary category identifier. Used to identify the compound in the DNA strand, depending on id1.",
     name: "A human-readable name for this superset category",
@@ -19,9 +19,9 @@ def ssc_add(
     codon2_reverse: "Set to 1 if codon 2 should be read as its reverse complement in the DNA" = 0,
     force_yes: "Set to true if answers should be assumed to be yes" = False,
 ) -> None:
-    """ Adds a new superset diversity element category.
+    """ Adds a new superset diversity point (SSP).
 
-    SSCs can be used to distinguish different subsets of a library.
+    SSPs can be used to distinguish different subsets of a library.
     """
     r = Runtime()
 
@@ -58,10 +58,10 @@ def ssc_add(
     r.save()
 
 
-def ssc_cat_list(
+def ssp_pnt_list(
         ssid: "Superset category identifier.",
 ) -> None:
-    """ Lists all registered categories of a superset category."""
+    """ Lists all registered categories of a superset diversity point."""
     r = Runtime()
 
     try:
@@ -80,12 +80,12 @@ def ssc_cat_list(
         r.error_exit(e)
 
 
-def ssc_cat_add(
+def ssp_pnt_add(
         ssid: "Superset category identifier.",
         name: "A human-readable name for the category.",
         index: "The desired codon or index to encode this sub category. Can also get automatically generated." = None,
 ) -> None:
-    """ Adds a category to an existing superset category. """
+    """ Adds a diversity point with index codon to an existing SSP. """
     r = Runtime()
 
     try:
@@ -112,12 +112,12 @@ def ssc_cat_add(
 
     r.save()
 
-def ssc_cat_reindex(
+def ssp_pnt_reindex(
         ssid: "Superset category identifier.",
         current_index: "The current codon or index of a sub category.",
         new_index: "The new codon or index of the sub category. Must not exist yet.",
 ) -> None:
-    """ Moves a category from a superset category to a newly given index. """
+    """ Moves a diversity point from a SSP to a newly given index. """
     r = Runtime()
 
     try:
@@ -129,15 +129,15 @@ def ssc_cat_reindex(
     except DECLException as e:
         r.error_exit(e)
 
-    ssc_cat_list(ssid)
+    ssp_pnt_list(ssid)
 
     r.save()
 
-def ssc_cat_del(
+def ssp_pnt_del(
         ssid: "Superset category identifier.",
         index: "The desired codon or index to encode this sub category."
 ) -> None:
-    """ Removes a category from an existing superset category. """
+    """ Removes a diversity point from an existing SSP. """
     r = Runtime()
 
     try:

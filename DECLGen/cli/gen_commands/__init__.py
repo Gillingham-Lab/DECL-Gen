@@ -1,15 +1,15 @@
 from .about import about
 from .management import init, remove
 from .library import lib_info, lib_edit, lib_generate
-from .categories import cat_list, cat_show, cat_add, cat_del, cat_edit, cat_clear
-from .superset_categories import ssc_add, ssc_cat_list, ssc_cat_add, ssc_cat_del, ssc_cat_reindex
-from .elements import elm_list, elm_show, elm_add, elm_del, elm_import, elm_copy
+from .diversityPoints import pnt_list, pnt_show, pnt_add, pnt_del, pnt_edit, pnt_clear
+from .diversitySuperPoints import ssp_add, ssp_pnt_list, ssp_pnt_add, ssp_pnt_del, ssp_pnt_reindex
+from .diversityElements import elm_list, elm_show, elm_add, elm_del, elm_import, elm_copy
 
 commands = [
     about,
     init, remove,
-    ssc_add, ssc_cat_list, ssc_cat_add, ssc_cat_del, ssc_cat_reindex,
-    cat_list, cat_show, cat_add, cat_del, cat_edit, cat_clear,
-    elm_list, elm_show, elm_add, elm_del, elm_import, elm_copy,
     lib_info, lib_edit, lib_generate,
+    pnt_list, pnt_show, pnt_add, pnt_del, pnt_edit, pnt_clear,
+    elm_list, elm_show, elm_add, elm_del, elm_import, elm_copy,
+    ssp_add, ssp_pnt_list, ssp_pnt_add, ssp_pnt_del, ssp_pnt_reindex,
 ]

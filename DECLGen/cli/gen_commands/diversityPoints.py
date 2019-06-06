@@ -8,8 +8,8 @@ from DECLGen.exceptions import \
     LibraryCategoryNotFoundException
 
 
-def cat_list():
-    """ Lists all registered diversity element categories """
+def pnt_list():
+    """ Lists all diversity points. """
     r = Runtime()
 
     try:
@@ -42,8 +42,8 @@ def cat_list():
         r.error_exit(e)
 
 
-def cat_show(id: "Category identifier"):
-    """ Shows details about a specific diversity element category """
+def pnt_show(id: "Category identifier"):
+    """ Shows details about a specific diversity point. """
     r = Runtime()
 
     try:
@@ -85,7 +85,7 @@ def cat_show(id: "Category identifier"):
 
 
 @argh.arg("anchors", nargs="+")
-def cat_add(
+def pnt_add(
     id: "Desired category identifier",
     name: "A human-readable name for this category",
     anchors: "A list of R-Groups that MUST elements for this category must have",
@@ -93,7 +93,7 @@ def cat_add(
     reverse_complement: "Set to 1 if the codon should be put as its reverse complement into the DNA" = 0,
     force_yes: "Set to true if answers should be assumed to be yes" = False,
 ) -> None:
-    """ Adds a new diversity element category """
+    """ Adds a new diversity point. """
     r = Runtime()
 
     try:
@@ -123,8 +123,8 @@ def cat_add(
     r.save()
 
 
-def cat_del(id: "Category identifier"):
-    """ Removes an existing diversity element category """
+def pnt_del(id: "Category identifier"):
+    """ Removes an existing diversity point. """
     r = Runtime()
 
     try:
@@ -135,13 +135,13 @@ def cat_del(id: "Category identifier"):
     r.save()
 
 
-def cat_edit(
+def pnt_edit(
     id: "Category identifier",
     name: "A human-readable name for this category" = None,
     codon_length: "The desired length of the codon. Codon length is flexible if not given or if set to 0." = None,
     reverse_complement: "Set to 1 if the codon should be put as its reverse complement into the DNA and 0 if not." = -1,
 ) -> None:
-    """ Changes some available parameters for a diversity element category """
+    """ Changes some available parameters for a diversity point. """
     r = Runtime()
 
     try:
@@ -160,8 +160,8 @@ def cat_edit(
     r.save()
 
 
-def cat_clear(id: "Category identifier"):
-    """Removes all diversity elements from a given diversity element category"""
+def pnt_clear(id: "Category identifier"):
+    """ Removes all diversity elements from a given diversity point. """
     r = Runtime()
 
     try:

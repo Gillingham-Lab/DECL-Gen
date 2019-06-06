@@ -11,7 +11,7 @@ def elm_list(
     id: "Category identifier",
     for_export: "Format the output for exporting the list." = False,
 ):
-    """ Lists all elements of a given diversity element category. """
+    """ Lists all elements of a given diversity point. """
     r = Runtime()
 
     try:
@@ -32,7 +32,7 @@ def elm_show(
     id: "Category identifier",
     index: "Element index."
 ):
-    """ Shows a given element of a given diversity element category. """
+    """ Shows a given element of a given diversity point. """
     r = Runtime()
 
     try:
@@ -51,7 +51,7 @@ def elm_add(
     index: "Element index. Automatically generated if not given. Can be either Number or DNA tag." = None,
     force_yes: "Force yes" = False,
 ):
-    """ Adds a new element to an existing category """
+    """ Adds a new element to an existing diversity point. """
     r = Runtime()
 
     try:
@@ -107,7 +107,7 @@ def elm_copy(
     idInto: "Category identifier to copy into.",
     anchorTranslations: "A list of R1:R3 pairs to translate the R-groups (In this case, R1 will be replaced with R3)",
 ):
-    """ Copies diversity elements from a category into the current one. Overwrites all target cat must be empty."""
+    """ Copies diversity elements from a diversity point into the current one. Overwrites all target point must be empty."""
     r = Runtime()
 
     try:
@@ -138,7 +138,7 @@ def elm_import(
     id: "Category identifier",
     filename: "Tab separated file to import"
 ):
-    """Imports all diversity elements from a tab separated file and adds them to the given category"""
+    """Imports all diversity elements from a tab separated file and adds them to the given diversity point. """
     r = Runtime()
 
     try:
