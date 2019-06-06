@@ -75,7 +75,7 @@ def elm_add(
                 cat.del_element(index)
                 cat.add_element(elm_smiles, index)
             else:
-                print("Category was not added.")
+                print("Diversity element was not added.")
     except DECLException as e:
         r.error_exit(e)
 

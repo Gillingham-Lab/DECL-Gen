@@ -16,7 +16,7 @@ def pnt_list():
         cats = r.storage.library.get_categories()
 
         if len(cats) == 0:
-            r.warning("No categories defined.")
+            r.warning("No diversity points defined.")
             return
 
         table = r.t.table((10, 8, 40, 10, 20), first_column=True, first_row=True)
@@ -50,7 +50,7 @@ def pnt_show(id: "Category identifier"):
         cat = r.storage.library.get_category(id)
         cat_desc = cat.describe()
 
-        print(r.t.highlight("Diversity Element Category {id}: {name}".format(**cat_desc)))
+        print(r.t.highlight("Diversity point {id}: {name}".format(**cat_desc)))
 
         dl = r.t.dl(20, 20, highlight_key=True, list_item="", values_justify_right=True)
         dl.add_row("R-Groups", cat_desc["anchors"])
@@ -101,8 +101,8 @@ def pnt_add(
         r.storage.library.get_category(id).set_reverse_complement(True if reverse_complement is 1 else False)
     except LibraryCategoryExistsException:
         if not force_yes:
-            print("{t.red}Warning:{t.normal} This will overwrite the existing DEC and delete all saved DE.".format(t=r.t))
-            print("If you want to edit some parts, use {exec} DEC-edit instead.".format(exec=sys.argv[0]))
+            print("{t.red}Warning:{t.normal} This will overwrite the existing diversity point and delete all saved elements within that point.".format(t=r.t))
+            print("If you want to edit some parts, use {exec} pnt-edit instead.".format(exec=sys.argv[0]))
 
             while True:
                 answer = input("Proceed anyway (Y/n)? ")
@@ -116,7 +116,7 @@ def pnt_add(
             r.storage.library.del_category(id)
             r.storage.library.add_category(id, name, anchors, codon_length)
         else:
-            print("Category was not added.")
+            print("Diversity point was not added.")
     except DECLException as e:
         r.error_exit(e)
 

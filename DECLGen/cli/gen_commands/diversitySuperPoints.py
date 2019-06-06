@@ -34,8 +34,8 @@ def ssp_add(
         if not force_yes:
             answer = r.t.decide(
                 "One or more of the ids you've selected are already occupied. "
-                "This will overwrite the existing categories and delete stored diversity elements." + \
-                "If you want to edit some parts, use {exec} DEC-edit instead".format(exec=sys.argv[0]),
+                "This will overwrite the existing diversity points and delete stored diversity elements." + \
+                "If you want to edit some parts, use {exec} pnt-edit instead".format(exec=sys.argv[0]),
                 "Proceed anyway?",
                 ["Y", "n"]
             )
@@ -51,7 +51,7 @@ def ssp_add(
                 r.storage.library.get_category(id1).set_reverse_complement(True if codon1_reverse is 1 else False)
                 r.storage.library.get_category(id1).set_reverse_complement(True if codon2_reverse is 1 else False)
             else:
-                print("Superset category was not added.")
+                print("Superset diversity point was not added.")
     except DECLException as e:
         r.error_exit(e)
 
@@ -67,7 +67,7 @@ def ssp_pnt_list(
     try:
         ssc = r.storage.library.get_category(ssid)
         if ssc.is_superset() is False:
-            raise DECLException("Given identifier must belong to a superset category.")
+            raise DECLException("Given identifier must belong to a superset diversity point.")
 
         table = r.t.table((10, 10, 10, 40), first_column=True, first_row=True)
         table.add_row("Index", "Codon", "Lengh", "Name")
@@ -91,7 +91,7 @@ def ssp_pnt_add(
     try:
         ssc = r.storage.library.get_category(ssid)
         if ssc.is_superset() is False:
-            raise DECLException("Given identifier must belong to a superset category.")
+            raise DECLException("Given identifier must belong to a superset diversity point.")
 
         try:
             ssc.add_category(name, index)
@@ -106,7 +106,7 @@ def ssp_pnt_add(
                 ssc.del_category(index)
                 ssc.add_category(name, index)
             else:
-                print("No sub category added.")
+                print("No sub diversity point added.")
     except DECLException as e:
         r.error_exit(e)
 
@@ -123,7 +123,7 @@ def ssp_pnt_reindex(
     try:
         ssc = r.storage.library.get_category(ssid)
         if ssc.is_superset() is False:
-            raise DECLException("Given identifier must belong to a superset category.")
+            raise DECLException("Given identifier must belong to an SSP.")
 
         ssc.reindex_category(current_index, new_index)
     except DECLException as e:
@@ -143,7 +143,7 @@ def ssp_pnt_del(
     try:
         ssc = r.storage.library.get_category(ssid)
         if ssc.is_superset() is False:
-            raise DECLException("Given identifier must belong to a superset category.")
+            raise DECLException("Given identifier must belong to an SSP.")
 
         ssc.del_category(index)
     except DECLException as e:
