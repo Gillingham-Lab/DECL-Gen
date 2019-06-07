@@ -13,7 +13,12 @@ def _match_score(x, y):
     elif y == x:
         return 5
     else:
-        return -4
+        return -2
+
+class Tmp:
+    N = None
+    Max = None
+    Length = None
 
 def _qc_helper(read: Seq, r: ReadfileMetadata, f: float = 0.3) -> Tuple[bool, Optional[List[Seq]]]:
     """
@@ -23,13 +28,28 @@ def _qc_helper(read: Seq, r: ReadfileMetadata, f: float = 0.3) -> Tuple[bool, Op
     :param f:
     :return:
     """
-    #alignment = pairwise2.align.localms(read, r.template, 5, -3, -4, -4, one_alignment_only=True)[0]
+    #alignment = pairwise2.align.localms(read, r.template, 5, -3, -4, -4, one_alignment_only=True)[0]exit
+
+    if Tmp.N is None:
+        Tmp.N = r.template.count("N")
+
+    if Tmp.Max is None:
+        Tmp.Max = (len(r.template)-Tmp.N)*5 + Tmp.N
+
+    if Tmp.Length is None:
+        Tmp.Length = len(r.template)
+
+    read = read[0:Tmp.Length]
+
     alignment = pairwise2.align.localcs(read, r.template, _match_score, -10, -1, one_alignment_only=True)[0]
-    max_score = min(len(read), len(r.template)) * 5
 
     codons = extract(alignment[0], get_codon_coordinates(alignment[1]), r.is_reverse())
+    indels = sum([1 for codon in codons if codon.count("-") > 0])
 
-    if alignment[2] > max_score * f:
+    if indels > 0:
+        return False, None
+
+    if alignment[2] > (Tmp.Max - 5*7 - 1):
         return True, codons
     else:
         return False, None

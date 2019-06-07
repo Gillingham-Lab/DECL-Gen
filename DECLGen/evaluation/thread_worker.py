@@ -73,6 +73,10 @@ def read_processor(block: ReadBlock):
     paired = block.metadata.is_paired()
     metadata = block.metadata
 
+    save_failed = False
+    if "save_failed" in metadata.kwargs:
+        save_failed = metadata.kwargs["save_failed"]
+
     result = AlignmentResult(paired=paired)
 
     for read_1, read_2 in block:
@@ -82,36 +86,34 @@ def read_processor(block: ReadBlock):
         r1_pass, r2_pass, (codons_1, codons_2) = metadata.method((read_1, read_2), metadata)
 
         if paired:
-            # If paired, check if both codons are the same.
-            if codons_1 == codons_2:
-                result["valid_pairs"] += 1
-            else:
-                result["invalid_pairs"] += 1
-                result.add_failed_read(read_1.seq, read_2.seq)
-                continue
-
             # Check and report which read was wrong
             if not r1_pass and not r2_pass:
                 result["both_low_quality_skips"] += 1
-                result.add_failed_read(read_1.seq, read_2.seq)
+                result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
                 continue
             elif not r1_pass:
                 result["r1_low_quality_skips"] += 1
-                result.add_failed_read(read_1.seq, read_2.seq)
+                result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
                 continue
             elif not r2_pass:
                 result["r2_low_quality_skips"] += 1
-                result.add_failed_read(read_1.seq, read_2.seq)
+                result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
+                continue
+
+            # If paired, check if both codons are the same.
+            if codons_1 == codons_2 and codons_1 != None:
+                result["valid_pairs"] += 1
+            else:
+                result["invalid_pairs"] += 1
+                result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
                 continue
         else:
             # Report if read was wrong
             if not r1_pass:
                 result["low_quality_skips"] += 1
-                result.add_failed_read(read_1.seq, read_2.seq)
+                result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
                 continue
 
-
-        result["reads_useful"] += 1
         # Convert
         codons_1 = tuple([str(x) for x in codons_1])
         result.increase_codon(codons_1)

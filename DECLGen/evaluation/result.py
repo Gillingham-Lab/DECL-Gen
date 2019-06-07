@@ -6,7 +6,6 @@ class AlignmentResult():
     _result = None
     _key_annotations = {
         "reads_processed": ("Processed Reads", "both"),
-        "reads_useful": ("Useful Reads", "both"),
         "valid_pairs": ("Valid Pairs", "paired"),
         "invalid_pairs": ("Invalid Pairs", "paired"),
         "low_quality_skips": ("Low Quality skips", "single"),

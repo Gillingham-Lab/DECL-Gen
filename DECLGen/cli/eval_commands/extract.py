@@ -50,6 +50,7 @@ def extract(
             max_reads=max_reads,
             progressBar=progressBar,
             no_auto_detection=no_auto_detection,
+            save_failed=save_failed,
         )
 
     # Save result
@@ -74,8 +75,8 @@ def extract(
 
     # Write the failed-to-use reads in separate files as well. Might be useful for analysis later.
     if save_failed:
-        with open("".join([os.path.basename(r1).split(".")[0], ".1.failed"]), "w") as fr1, \
-            open("".join([os.path.basename(r1).split(".")[0], ".2.failed"]), "w") as fr2:
+        with open("".join([os.path.basename(r1).split(".")[0], "-forward.failed"]), "w") as fr1, \
+            open("".join([os.path.basename(r1).split(".")[0], "-reverse.failed"]), "w") as fr2:
             for read1, read2 in result._failed_reads:
                 fr1.write(str(read1) + "\n")
                 fr2.write(str(read2) + "\n")
