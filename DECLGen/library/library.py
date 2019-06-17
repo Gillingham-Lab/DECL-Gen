@@ -208,6 +208,16 @@ class Library:
             shape.append(len(cat))
         return tuple(shape)
 
+    def __len__(self):
+        shape = self.shape
+        if len(shape) == 0:
+            return 1
+        else:
+            a = 1
+            for k in shape:
+                a *= k
+            return a
+
     def add_category(self, id: str, name: str, anchors: List[str], codon_length: int = 0) -> bool:
         """
         Adds a new diversity element category to the library.
@@ -492,7 +502,7 @@ class Library:
 
         reads_1_template = None
         reads_2_template = None
-        max_trials = 10
+        max_trials = 1000
 
         for read_1 in reads_1:
             read_2 = next(reads_2) if reads_2 is not None else None

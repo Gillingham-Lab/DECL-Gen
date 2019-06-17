@@ -1,7 +1,8 @@
 import argh
 from timeit import default_timer as timer
 import multiprocessing as mp
-from typing import List, Dict, Iterable
+import random
+from typing import List, Dict, Iterable, Optional
 from csv import writer
 from DECLGen import Runtime
 from DECLGen.molecule import Molecule
@@ -46,15 +47,21 @@ def lib_edit(
 def iterate_queue(
     library: Library,
     data_fields: Dict[str, bool],
-    queue: Iterable
+    queue: Iterable,
+    sampling: Optional[int]
 ) -> List:
     for item in queue:
-        yield [library, data_fields, item]
+        yield [library, data_fields, item, sampling]
 
 
 def process_molecules(args: List) -> List:
-    library, data_fields, item = args
+    library, data_fields, item, sampling = args
     cat1, cats = item
+
+    samplingRate = sampling / len(library)
+    if samplingRate > 1:
+        samplingRate = 1
+    samplingRate *= 1e6
 
     dna_template = library.get_dna_template()
 
@@ -73,6 +80,10 @@ def process_molecules(args: List) -> List:
                 dna = ""
         except KeyError:
             raise Exception("Generation of DNA strand was not possible; Please check if all {catId} in the dna strand exist within the library.")
+
+        # Lets only do this by chance
+        if sampling > 0 and random.randrange(0, 1e6) > samplingRate:
+            continue
 
         molecules.append([library.get_codon_summary_string(dna_parts)] + codons + [dna] + molecule.get_data(data_fields))
 
@@ -102,8 +113,10 @@ def yield_helper(cat1, cats):
 
 
 @argh.arg("--timing", action="store_true")
+@argh.arg("--sampling", type=int)
 def lib_generate(
     threads: "Number of threads" = 1,
+    sampling: "Only generates approximately SAMPLE_SIZE random structures from the total set" = 0,
     all: "Include all possible data" = False,
     timing: "Measure time needed for generation" = False,
     mw: "Include molecular weight" = False,
@@ -164,7 +177,7 @@ def lib_generate(
         j = 0
         with mp.Pool(threads) as pool:
             try:
-                for molecules in pool.imap_unordered(process_molecules, iterate_queue(r.storage.library, data_fields, queue)):
+                for molecules in pool.imap_unordered(process_molecules, iterate_queue(r.storage.library, data_fields, queue, sampling)):
                     i += len(molecules)
                     j += 1
                     for molecule in molecules:
