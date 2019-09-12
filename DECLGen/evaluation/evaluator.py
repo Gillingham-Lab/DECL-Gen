@@ -391,7 +391,7 @@ class Evaluator:
             fig, ax = Scatter3D(
                 df_reduced, codon_x, codon_y, "MeanEnrichment", c="MeanEnrichment", s="MeanEnrichment", complete_data=df,
                 project_on_z_plane=project_on_z_plane,
-                anchored=anchored,
+                anchored=anchored
             )
 
             fig.savefig(image_stream, format=self.plot_format)
@@ -520,6 +520,7 @@ def Scatter3D(
 
     # If one dimension is one-dimensional, we just plot a 2d scatter of the remaining two.
     if (x_lim[1] - x_lim[0] == 0 or y_lim[1] - y_lim[0] == 0 or z_lim[1] - z_lim[0] == 0):
+        print(x_lim, y_lim, z_lim)
         # do something else
         if x_lim[1] - x_lim[0] == 0:
             x_lim = z_lim
