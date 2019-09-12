@@ -26,6 +26,7 @@ def extract(
         timing: "Measure the timing" = False,
         save_failed: "Save failed reads" = False,
         no_auto_detection: "Deactivates the autodetection of which file is forward and which is the reverse read." = False,
+        skip_codon_matching: "Skips the automated invalidation of mismatching codons." = False,
 ):
     r = Runtime()
 
@@ -51,6 +52,7 @@ def extract(
             progressBar=progressBar,
             no_auto_detection=no_auto_detection,
             save_failed=save_failed,
+            skip_codon_matching=skip_codon_matching,
         )
 
     # Save result

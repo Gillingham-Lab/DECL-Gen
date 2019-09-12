@@ -449,7 +449,7 @@ class Library:
         template_f = Seq(self.get_formatted_stub_dna_template().upper(), alphabet=IUPAC.ambiguous_dna)
         template_r = template_f.reverse_complement()
 
-        if no_auto_detection is not False:
+        if no_auto_detection is False:
             r1_template, r2_template = self._assign_template(template_f, template_r, r1, r2, n=compare_n)
         else:
             r1_template = template_f

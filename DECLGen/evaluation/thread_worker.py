@@ -73,6 +73,8 @@ def read_processor(block: ReadBlock):
     paired = block.metadata.is_paired()
     metadata = block.metadata
 
+    skip_codon_matching = False if "skip_codon_matching" not in metadata.kwargs else metadata.kwargs["skip_codon_matching"]
+
     save_failed = False
     if "save_failed" in metadata.kwargs:
         save_failed = metadata.kwargs["save_failed"]
@@ -100,13 +102,47 @@ def read_processor(block: ReadBlock):
                 result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
                 continue
 
-            # If paired, check if both codons are the same.
-            if codons_1 == codons_2 and codons_1 != None:
-                result["valid_pairs"] += 1
+            if skip_codon_matching is False:
+                # If paired, check if both codons are the same.
+                if codons_1 == codons_2 and codons_1 != None:
+                    result["valid_pairs"] += 1
+                else:
+                    result["invalid_pairs"] += 1
+                    result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
+                    continue
+            # If skip_codon_matching is used, we assume that something is not okay - like codons not covered on one strand.
             else:
-                result["invalid_pairs"] += 1
-                result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
-                continue
+                true_codons = []
+                for i in range(len(codons_1)):
+                    c1 = codons_1[i]
+                    c2 = codons_2[i]
+
+                    if len(c1) != len(c2):
+                        result["invalid_pairs"] += 1
+                        result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
+                        continue
+
+                    nc = ""
+
+                    for y in range(len(c1)):
+                        nt1 = c1[y]
+                        nt2 = c2[y]
+
+                        if nt1 == "-":
+                            nc += nt2
+                        elif nt2 == "-":
+                            nc += nt1
+                        elif nt1 == nt2:
+                            nc += nt1
+                        else:
+                            result["invalid_pairs"] += 1
+                            result.add_failed_read(read_1.seq, read_2.seq) if save_failed else None
+                            continue
+
+                    true_codons.append(nc)
+
+                codons_1 = true_codons
+                result["valid_pairs"] += 1
         else:
             # Report if read was wrong
             if not r1_pass:

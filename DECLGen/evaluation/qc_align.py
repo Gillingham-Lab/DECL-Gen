@@ -20,7 +20,7 @@ class Tmp:
     Max = None
     Length = None
 
-def _qc_helper(read: Seq, r: ReadfileMetadata, f: float = 0.3) -> Tuple[bool, Optional[List[Seq]]]:
+def _qc_helper(read: Seq, r: ReadfileMetadata, f: int = 5) -> Tuple[bool, Optional[List[Seq]]]:
     """
     Helper method for qc_align()
     :param read:
@@ -44,12 +44,12 @@ def _qc_helper(read: Seq, r: ReadfileMetadata, f: float = 0.3) -> Tuple[bool, Op
     alignment = pairwise2.align.localcs(read, r.template, _match_score, -10, -1, one_alignment_only=True)[0]
 
     codons = extract(alignment[0], get_codon_coordinates(alignment[1]), r.is_reverse())
-    indels = sum([1 for codon in codons if codon.count("-") > 0])
+    #indels = sum([1 for codon in codons if codon.count("-") > 0])
 
-    if indels > 0:
-        return False, None
+    #if indels > 0:
+    #    return False, None
 
-    if alignment[2] > (Tmp.Max - 5*7 - 1):
+    if alignment[2] > (Tmp.Max - f*7 - 1):
         return True, codons
     else:
         return False, None
@@ -71,6 +71,10 @@ def qc(
     if metadata.quality is not None:
         quality = float(abs(metadata.quality))
     quality = quality if quality < 1 else 1
+
+    skip_codon_matching = False if "skip_codon_matching" not in metadata.kwargs else metadata.kwargs["skip_codon_matching"]
+    if skip_codon_matching:
+        quality = 100
 
     # Check quality and fetch adjusted coordinates
     r1_pass, r1_codons = _qc_helper(read_1.seq, r1, quality)

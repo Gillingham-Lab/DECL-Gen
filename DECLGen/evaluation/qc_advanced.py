@@ -91,6 +91,7 @@ def qc(
 
     quality = metadata.quality
     metadata.quality = quality//1
+    skip_codon_matching = False if "skip_codon_matching" not in metadata.kwargs else metadata.kwargs["skip_codon_matching"]
 
     r1_pass, r2_pass, codons = qc_simple(reads, metadata)
 
