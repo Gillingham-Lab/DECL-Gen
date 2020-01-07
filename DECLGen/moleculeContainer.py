@@ -1,5 +1,8 @@
+from rdkit import Chem
 from typing import List
+
 from .molecule import Molecule
+from .rtools import mask, unmask
 
 class MoleculeContainer:
     molecules: List[Molecule]
@@ -10,14 +13,21 @@ class MoleculeContainer:
     def __len__(self):
         return len(self.molecules)
 
+    def __iter__(self):
+        for molecule in self.molecules:
+            yield molecule
+
     @classmethod
-    def fromSmilesList(cls, source) -> "MoleculeContainer":
+    def fromSmilesList(cls, source: str, doMask: bool=True) -> "MoleculeContainer":
         """ Reads a file and constructs molecules out of it. """
         container = cls()
 
         with open(source, "r") as file:
             for row in file:
                 row = row.strip()
+
+                if doMask:
+                    row = mask(row)
 
                 mol = Molecule(row)
 
@@ -31,4 +41,14 @@ class MoleculeContainer:
 
     def add(self, molecule: Molecule):
         """ Adds a molecule to the container. """
-        self.molecules.append(Molecule)
+        self.molecules.append(molecule)
+
+    def export(self, outFile, doUnmask=True):
+        with open(outFile, "w") as file:
+            for m in self.molecules:
+                smiles = m.canonical_smiles()
+
+                if doUnmask:
+                    smiles = unmask(smiles)
+
+                file.write(f"{smiles}\n")

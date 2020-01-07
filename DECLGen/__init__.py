@@ -5,6 +5,7 @@ from .exceptions import *
 from .terminal import Terminal
 from . import codon
 from .moleculeContainer import MoleculeContainer
+from .reactions import Reaction, predefinedReactions
 
 __name__ = "DECL-Gen"
 __description__ = "A tool to generate DNA encoded compound library from fragments and calculate their properties."

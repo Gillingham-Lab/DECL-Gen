@@ -78,3 +78,21 @@ class MoleculeInvalidSmilesException(DECLException):
         super(MoleculeInvalidSmilesException, self).__init__()
 
         self.smiles = smiles
+
+class ReactionInvalidSmartsException(DECLException):
+    smarts: str
+
+    def __init__(self, smarts):
+        super(ReactionInvalidSmartsException, self).__init__()
+
+        self.smarts = smarts
+
+class ReactionNoProductException(DECLException):
+    smiles: str
+    smarts: str
+
+    def __init__(self, smiles, smarts):
+        super(ReactionNoProductException, self).__init__()
+
+        self.smiles = smiles
+        self.smarts = smarts
