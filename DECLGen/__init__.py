@@ -4,6 +4,7 @@ from . import template
 from .exceptions import *
 from .terminal import Terminal
 from . import codon
+from .moleculeContainer import MoleculeContainer
 
 __name__ = "DECL-Gen"
 __description__ = "A tool to generate DNA encoded compound library from fragments and calculate their properties."

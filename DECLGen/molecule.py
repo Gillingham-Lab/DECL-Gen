@@ -38,7 +38,7 @@ class Molecule:
         self._mol = Chem.MolFromSmiles(smiles)
 
         if self._mol is None:
-            raise MoleculeInvalidSmilesException
+            raise MoleculeInvalidSmilesException(smiles)
 
     @staticmethod
     def get_data_headers(data_fields: Dict[str, bool]) -> List[str]:

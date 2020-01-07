@@ -71,5 +71,10 @@ class EvaluationInvalidFileFormat(DECLException):
     exitcode = 102
 
 
-class MoleculeInvalidSmilesException(ValueError):
-    pass
+class MoleculeInvalidSmilesException(DECLException):
+    smiles: str
+
+    def __init__(self, smiles):
+        super(MoleculeInvalidSmilesException, self).__init__()
+
+        self.smiles = smiles
