@@ -41,3 +41,23 @@ class ReactionTestCase(unittest.TestCase):
 
                 self.assertNotEqual(input, result)
                 self.assertEqual(expected, result)
+
+    def test_if_AmideCoupling_is_specific_enough(self):
+        tests = [
+            # Prevent Amide
+            ("CC(=O)NCC"),
+            # Prevent Anilines
+            ("Nc1ccc(C)cc1"),
+        ]
+
+        for i in range(len(tests)):
+            with self.subTest(i=i):
+                input = tests[i]
+
+                m = Molecule(input)
+                rxn = Reaction(**predefinedReactions["AmideCoupling_Amine"], rGroup="R1")
+
+                rxn.react(m)
+                result = unmask(Chem.MolToSmiles(m._mol))
+
+                self.assertEqual(input, result)
