@@ -99,7 +99,7 @@ predefinedReactions = {
 
     "AmideCoupling_Acid": {
         "smarts": [
-            "[C:1](=[O:2])-[OH1]>>[C:1](=[O:2])",
+            "[C:1](=[O:2])-[OH1]>>[C:1](=[O:2])[R]",
         ],
     },
 
@@ -116,15 +116,15 @@ predefinedReactions = {
     },
 
     "NAr_Phenol": {
-    "smarts": [
-            "[c:1]-[OH1:1]>>[*:1]-[O:2]-[R]",
+        "smarts": [
+            "[c:1]-[OH1:2]>>[c:1]-[O:2]-[R]",
         ]
     },
 
     "NAr_Aniline": {
         "smarts": [
-            "[c:1]-[NH1:1]>>[*:1]-[N:2]-[R]",
-            "[c:1]-[NH2:1]>>[*:1]-[N:2]-[R]",
+            "[c:1]-[NH1:2]>>[*:1]-[N:2]-[R]",
+            "[c:1]-[NH2:2]>>[*:1]-[N:2]-[R]",
         ],
         "protections": [
             "[N;$(NC=[O,S])]",
@@ -133,7 +133,7 @@ predefinedReactions = {
 
     "NAr_Amine": {
         "smarts": [
-            "[CX4:2][NX3;H3:1]>>[C:2][N:1][R]",
+            "[NX3;H3:1]>>[C:2][N:1][R]",
             "[CX4:2][NX3;H2:1]>>[C:2][N:1][R]",
             "[CX4:2][NX3;H1:1]>>[C:2][N:1][R]",
         ],
