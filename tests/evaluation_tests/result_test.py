@@ -5,7 +5,7 @@ from DECLGen.evaluation import AlignmentResult
 
 class ResultTestCase(unittest.TestCase):
     attributes = [
-        "reads_useful",
+        "reads_processed",
         "valid_pairs",
         "invalid_pairs",
         "low_quality_skips",
