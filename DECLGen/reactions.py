@@ -73,8 +73,15 @@ class Reaction:
 predefinedReactions = {
     "AmideCoupling_Amine": {
         "smarts": [
-            "[CX4:2][NX3;H3:1]>>[C:2][N:1][1Au]",
-            "[CX4:2][NX3;H2:1]>>[C:2][N:1][1Au]",
-            "[CX4:2][NX3;H1:1]>>[C:2][N:1][1Au]",
-        ]},
+            "[CX4:2][NX3;H3:1]>>[C:2][N:1][R]",
+            "[CX4:2][NX3;H2:1]>>[C:2][N:1][R]",
+            "[CX4:2][NX3;H1:1]>>[C:2][N:1][R]",
+        ]
+    },
+
+    "AmideCoupling_Acids": {
+"smarts": [
+            "[C:1](=[O:2])-[OH1:3]>>[C:1](=[O:2])-[R]"
+        ]
+    }
 }
