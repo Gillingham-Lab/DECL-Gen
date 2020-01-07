@@ -1,4 +1,5 @@
 from typing import List
+from rdkit import Chem
 from rdkit.Chem import AllChem
 
 from .exceptions import ReactionInvalidSmartsException, ReactionNoProductException
@@ -31,16 +32,16 @@ class Reaction:
                 self.smartsStrings[i] = S.replace("[R]", self.rGroup.Au)
 
         self.smarts = self.createReactions(self.smartsStrings)
-        self.protections = self.createReactions(self.protectionStrings)
+        self.protections = self.createSubstructs(self.protectionStrings)
 
-    def createReactions(self, smarts: List[str]) -> List["rdkit.Chem.rdChemReactions.ChemicalReaction"]:
+    def createN(self, smarts: List[str], method) -> List:
         """ Converts a list of smarts to a list of reactions. """
         reactions = []
 
         for S in smarts:
             S = mask(S)
 
-            reaction = AllChem.ReactionFromSmarts(S)
+            reaction = method(S)
 
             if reaction is None:
                 raise ReactionInvalidSmartsException(S)
@@ -49,9 +50,24 @@ class Reaction:
 
         return reactions
 
+    def createReactions(self, smarts: List[str]) -> List["rdkit.Chem.rdChemReactions.ChemicalReaction"]:
+        """ Converts a list of smarts to a list of reactions. """
+        return self.createN(smarts, AllChem.ReactionFromSmarts)
+
+    def createSubstructs(self, smarts: List[str]) -> List:
+        """ Converts a list of smarts to a list of structures for substruct match. """
+        return self.createN(smarts, Chem.MolFromSmarts)
+
     def react(self, molecule: Molecule):
         mol = molecule._mol
-        product = None
+        productSet = None
+
+        # Add protections
+        for p in self.protections:
+            matches = mol.GetSubstructMatches(p)
+
+            for match in matches:
+                mol.GetAtomWithIdx(match[0]).SetProp("_protected", "1")
 
         # Run all given reactions
         for rxn in self.smarts:
@@ -76,12 +92,27 @@ predefinedReactions = {
             "[CX4:2][NX3;H3:1]>>[C:2][N:1][R]",
             "[CX4:2][NX3;H2:1]>>[C:2][N:1][R]",
             "[CX4:2][NX3;H1:1]>>[C:2][N:1][R]",
-        ]
+        ],
+        "protections": [
+            "[N;$(NC=[O,S])]",
+        ],
     },
 
-    "AmideCoupling_Acids": {
-"smarts": [
-            "[C:1](=[O:2])-[OH1:3]>>[C:1](=[O:2])-[R]"
+    "AmideCoupling_Acid": {
+        "smarts": [
+            "[C:1](=[O:2])-[OH1]>>[C:1](=[O:2])"
+        ],
+    },
+
+    "CuAAC_Alkyne": {
+        "smarts": [
+            "[C:1]#[CH1:2]>>[c:1]1[c:2]n([R])nn1"
+        ],
+    },
+
+    "CuAAC_Azide": {
+        "smarts": [
+            "[#6:1]-[N]=[N+]=[N-]>>[*:1]-[R]"
         ]
-    }
+    },
 }
