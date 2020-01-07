@@ -299,7 +299,7 @@ class ReactionTestCase(unittest.TestCase):
                 input, expected = tests[i]
 
                 m = Molecule(input)
-                rxn = Reaction(**predefinedReactions["AmideCoupling_Amine"], rGroup="R1")
+                rxn = Reaction(**predefinedReactions["NAr_Amine"], rGroup="R1")
 
                 rxn.react(m)
                 result = unmask(Chem.MolToSmiles(m._mol))
@@ -322,7 +322,129 @@ class ReactionTestCase(unittest.TestCase):
                 input = smiles
 
                 m = Molecule(input)
-                rxn = Reaction(**predefinedReactions["AmideCoupling_Amine"], rGroup="R1")
+                rxn = Reaction(**predefinedReactions["NAr_Amine"], rGroup="R1")
+
+                with self.assertRaises(ReactionNoProductException):
+                    rxn.react(m)
+
+                result = unmask(Chem.MolToSmiles(m._mol))
+
+                self.assertEqual(input, result)
+
+    def test_if_NAr_Acceptor_gives_correct_products(self):
+        tests = [
+            # Fluorbenzene
+            ("Fc1ccccc1", "[R1]c1ccccc1"),
+            # 2-Chloropyridine
+            ("Clc1ncccc1", "[R1]c1ccccn1"),
+            # 4-Chloropyridine
+            ("Clc1ccncc1", "[R1]c1ccncc1"),
+            # 2-Chloro-2-nitrobenzene
+            ("Clc1c([N+](=O)[O-])cccc1", "O=[N+]([O-])c1ccccc1[R1]"),
+            # 4-Chloro-2-nitrobenzene
+            ("Clc1ccc([N+](=O)[O-])cc1", "O=[N+]([O-])c1ccc([R1])cc1"),
+        ]
+
+        for input, expected in tests:
+            with self.subTest(input=input, expected=expected):
+                m = Molecule(input)
+                rxn = Reaction(**predefinedReactions["NAr_Acceptor"], rGroup="R1")
+
+                rxn.react(m)
+                result = unmask(Chem.MolToSmiles(m._mol))
+
+                self.assertNotEqual(input, result)
+                self.assertEqual(expected, result)
+
+    def test_if_NAr_Acceptor_is_specific_enough(self):
+        tests = [
+            # Prevent Chlorbenzene
+            ("Clc1ccccc1"),
+        ]
+
+        for smiles in tests:
+            with self.subTest(smiles=smiles):
+                input = smiles
+
+                m = Molecule(input)
+                rxn = Reaction(**predefinedReactions["NAr_Acceptor"], rGroup="R1")
+
+                with self.assertRaises(ReactionNoProductException):
+                    rxn.react(m)
+
+                result = unmask(Chem.MolToSmiles(m._mol))
+
+                self.assertEqual(input, result)
+
+    def test_if_Suzuki_Halogen_gives_correct_products(self):
+        tests = [
+            # Fluorbenzene
+            ("Clc1ccccc1", "[R1]c1ccccc1"),
+            ("Brc1ccccc1", "[R1]c1ccccc1"),
+            ("Ic1ccccc1", "[R1]c1ccccc1"),
+        ]
+
+        for input, expected in tests:
+            with self.subTest(input=input, expected=expected):
+                m = Molecule(input)
+                rxn = Reaction(**predefinedReactions["Suzuki_Halogen"], rGroup="R1")
+
+                rxn.react(m)
+                result = unmask(Chem.MolToSmiles(m._mol))
+
+                self.assertNotEqual(input, result)
+                self.assertEqual(expected, result)
+
+    def test_if_Suzuki_Halogen_is_specific_enough(self):
+        tests = [
+            # Prevent Fluorbenzene
+            ("Fc1ccccc1"),
+        ]
+
+        for smiles in tests:
+            with self.subTest(smiles=smiles):
+                input = smiles
+
+                m = Molecule(input)
+                rxn = Reaction(**predefinedReactions["Suzuki_Halogen"], rGroup="R1")
+
+                with self.assertRaises(ReactionNoProductException):
+                    rxn.react(m)
+
+                result = unmask(Chem.MolToSmiles(m._mol))
+
+                self.assertEqual(input, result)
+
+    def test_if_Suzuki_Boron_gives_correct_products(self):
+        tests = [
+            # Phenylboronic acid
+            ("OB(O)c1ccccc1", "[R1]c1ccccc1"),
+            # Phenylboronic acid pinacol ester
+            ("CC1(C)C(C)(C)OB(O1)c1ccccc1", "[R1]c1ccccc1"),
+        ]
+
+        for input, expected in tests:
+            with self.subTest(input=input, expected=expected):
+                m = Molecule(input)
+                rxn = Reaction(**predefinedReactions["Suzuki_Boron"], rGroup="R1")
+
+                rxn.react(m)
+                result = unmask(Chem.MolToSmiles(m._mol))
+
+                self.assertNotEqual(input, result)
+                self.assertEqual(expected, result)
+
+    def test_if_Suzuki_Boron_is_specific_enough(self):
+        tests = [
+            # Prevent nothing?
+        ]
+
+        for smiles in tests:
+            with self.subTest(smiles=smiles):
+                input = smiles
+
+                m = Molecule(input)
+                rxn = Reaction(**predefinedReactions["Suzuki_Boron"], rGroup="R1")
 
                 with self.assertRaises(ReactionNoProductException):
                     rxn.react(m)
