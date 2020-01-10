@@ -283,6 +283,7 @@ class Category(BaseCategory):
                 smiles = cols[1]
 
                 if self.has_index(codon):
+                    print(f"Warning: Element with codon '{codon}' already existed, but was overwritten.")
                     self.del_element(codon)
 
                 self.add_element(smiles, codon)
