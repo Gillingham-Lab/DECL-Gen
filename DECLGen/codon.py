@@ -56,11 +56,11 @@ def encode(n: int, length: int) -> str:
     :return: str, The encoded DNA string
     """
     if n < 0:
-        raise ValueError("n must be >= 0")
+        raise ValueError(f"n must be >= 0, but is {n}")
     if length <= 0:
-        raise ValueError("length must be > 0")
+        raise ValueError(f"length must be > 0, but is {length}")
     if n >= len(bases)**length:
-        raise ValueError("length must be sufficient for n.")
+        raise ValueError(f"length must be sufficient for n (n is {n}, amount of bases are {len(bases)}, length is {length}")
 
     # Build-up codon, lowest digit first
     l = len(bases)

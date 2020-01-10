@@ -8,8 +8,9 @@ from .terminal import Terminal
 
 
 class Runtime:
-    @staticmethod
+    @classmethod
     def create(
+        cls,
         template: "Template string used for adding in diversity elements",
         advanced_anchors: bool = False,
         superset_categories: bool = False,
@@ -27,7 +28,7 @@ class Runtime:
         with open("decl_gen.data", "wb") as datafile:
             dump(storage, datafile, 4)
 
-        return Runtime()
+        return cls()
 
     @staticmethod
     def remove_init_file() -> None:
@@ -41,7 +42,7 @@ class Runtime:
         """
         Constructor.
 
-        Loads the library from decl_gen.data using pickle.load() and initializes the Terminal.
+        Loads the library from decl_gen.data using pickle.loRuntimead() and initializes the Terminal.
         :param anew:
         """
 
@@ -52,7 +53,16 @@ class Runtime:
             storage = load(datafile)
 
         self.storage = storage
+
+        # If bases is not known or has a weird value, reset it.
+        if not hasattr(storage, "bases"):
+            storage.bases = CodonConfig.bases
+        elif len(storage.bases) <= 1 or type(storage.bases) != str:
+            print("Bases in storage were weird, removed to default interpretation.")
+            storage.bases = CodonConfig.bases
+
         CodonConfig.bases = storage.bases
+
         self.t = Terminal()
 
     def save(self):
@@ -69,7 +79,7 @@ class Runtime:
         :param e:
         :return:
         """
-        msg = "{e} (Code: {e.exitcode}".format(e)
+        msg = f"{e} (Code: {e.exitcode})"
         msg = self.t.val_bad(msg)
         print(msg, file=sys.stderr)
 

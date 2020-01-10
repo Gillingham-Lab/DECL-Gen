@@ -90,7 +90,7 @@ def react(
         try:
             reactionClass.react(m)
         except ReactionNoProductException as e:
-            print(f"No product detected with {e.smiles} (smarts: {e.smarts}")
+            print(f"No product detected with {e.smiles}.")
 
     # Save the results
     molecules.export(outFile)
