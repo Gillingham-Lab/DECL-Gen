@@ -49,6 +49,9 @@ class TemplateTestCase(unittest.TestCase):
             ("[R3][C@@H](OH)CC[R2]", "[C@H][R3](OH)CC[R2]"),
             ("[R3][C@H](OH)CC[R2]", "[C@@H][R3](OH)CC[R2]"),
             ("[R3][C@@H](OH)[C@@H](N)C[R2]", "[C@H][R3](OH)[C@@H](N)C[R2]"),
+            ("[R3]c1ccccc1", "c1[R3]ccccc1"),
+            ("[R5]NC", "N[R5]C"),
+            ("[R5]N", "N[R5]"),
         ]
 
         for a, b in tests:

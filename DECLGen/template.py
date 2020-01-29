@@ -38,10 +38,18 @@ def sanitize(raw_template: str) -> str:
             for i in range(length):
                 atom = raw_template[i]
 
-                if atom in "CNO":
-                    if raw_template[i + 1] in "0123456789":
+                if atom in "CNOScnos":
+                    # For cases where the template is very short, such as [R1]N, the index must be within range.
+                    if i+1 < len(raw_template):
+                        # +1 is after the end of the string, atom length must be 1.
+                        atom_length = 1
+                    elif raw_template[i + 1] in "0123456789":
+                        # The letter afterwards is a number, the atom length must be two.
+                        # Be aware, this assumes that no circle numbers > 9 are used!
+                        # %10 WILL fail.
                         atom_length = 2
                     else:
+                        # If the next letter is not a number, atom length must be one.
                         atom_length = 1
 
                     break
