@@ -168,7 +168,7 @@ def lib_generate(
     progressBar = ProgressBar(r.t, desc="Generating library properties")
     progressBar.start()
 
-    with open("library-properties.csv", "w") as fh:
+    with open("library-properties.csv", "w", newline="") as fh:
         csv_file = writer(fh)
         csv_file.writerow(["Codon-Combination"] + elements + ["DNA"] + Molecule.get_data_headers(data_fields))
 
