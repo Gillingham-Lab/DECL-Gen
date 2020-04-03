@@ -41,7 +41,14 @@ def qc(
     read_1, read_2 = reads
     r1 = metadata.r1
     r2 = metadata.r2
-    quality = int(round(metadata.quality)) or 5
+
+    if metadata.quality is None:
+        quality = 3
+    else:
+        try:
+            quality = int(round(metadata.quality)) or 3
+        except TypeError:
+            quality = 3
 
     # Check quality
     r1_pass = _qc_helper(read_1.seq, r1, quality)
