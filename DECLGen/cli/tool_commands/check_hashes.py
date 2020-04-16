@@ -17,7 +17,7 @@ def md5_file(file):
 def check_hashes(
     path: "Path to start searchning."
 ):
-    """ Checks recursively the md5 hashes against a list in a given direction. """
+    """ Checks recursively the md5 hashes against a list in a given directory. """
     init()
 
     if not os.path.exists(path):

@@ -62,6 +62,7 @@ class Evaluator:
     count_columns: List[str]
     codon_columns: List[str]
     codon_rank_columns: List[str]
+    normalized_column_names: List[str]
     column_numbers: List[int]
     diversity_elements_count: int
 
@@ -102,7 +103,8 @@ class Evaluator:
         p = []
 
         for c in self.count_columns:
-            x = 1 - (1 - 1/N)**self.count_table_purified[c].sum()
+            n = self.count_table_purified[c]
+            x = 1 - (1 - 1/N)**(n.sum() - len(n))
             p.append(x)
 
         P = N
@@ -159,23 +161,22 @@ class Evaluator:
 
         # If there is only 1 replicate, we need to manually set a few columns to 0
         if self.replicates == 1:
-            self.count_table_purified["VarEnrichment"] = 0
-            self.count_table_purified["StdEnrichment"] = 0
-            self.count_table_purified["StdDevCounts"] = 0
+            self.count_table_purified["std"] = 0
 
         # Create a copy of the table where non-overlapping are removed.
         self.count_table_reduced = self.count_table_purified.dropna()
-        self.count_table_reduced = self.count_table_reduced.sort_values(by=["MeanCounts", "StdDevCounts"], ascending=[False, True])
+        self.count_table_reduced = self.count_table_reduced.sort_values(by=["mean", "std"], ascending=[False, True])
         self.count_table_reduced = self.count_table_reduced.reset_index(drop=True)
 
         # Create a copy of the table where non-overlapping are kept, but set to 0.
         self.count_table_purified = self.count_table_purified.fillna(0)
-        self.count_table_purified = self.count_table_purified.sort_values(by=["MeanCounts", "StdDevCounts"], ascending=[False, True])
+        self.count_table_purified = self.count_table_purified.sort_values(by=["mean", "std"], ascending=[False, True])
         self.count_table_purified = self.count_table_purified.reset_index(drop=True)
 
         # Statistics
-        self.valid_codons = self.count_table_purified[self.count_table_purified["MeanCounts"] > 0]["Codon-Combination"].nunique()
-        self.valid_counts = int(self.count_table_purified[self.count_columns].sum().sum())
+        #self.valid_codons = self.count_table_purified[self.count_table_purified["mean"] > 1]["Codon-Combination"].nunique()
+        self.valid_codons = self.count_table_purified[(self.count_table_purified[self.count_columns] > 1).any(axis=1)]["Codon-Combination"].nunique()
+        self.valid_counts = int(self.count_table_purified[self.count_columns].sum().sum()) - self.replicates*len(self.count_table_purified)
 
         if self.progress_bar is not None:
             self.progress_bar.update(0.99)
@@ -255,9 +256,6 @@ class Evaluator:
                 # Rename Count to CountX, where X is a integer.
                 result.rename(columns={column: new_column}, inplace=True)
 
-                # Calculate the enrichment factor and put it into a new column
-                result["Enrichment{}".format(i)] = calculate_enrichment_factor(result[new_column], self.library_size, result[new_column].sum())
-
                 # Append the new colum name to a list of count_columns, and append the number fo a list of column numbers.
                 count_columns.append(new_column)
                 column_numbers.append(column_number)
@@ -265,27 +263,22 @@ class Evaluator:
             # Fill empty fields with 0
             result.fillna(0, inplace=True)
 
+            # Additive smoothing
+            result[count_columns] += 1
+
+            # Normalize counts
+            normalized_column_names = [f"N_{x}" for x in count_column_names]
+            result[normalized_column_names] = result[count_columns]/result[count_columns].sum(axis=0) * 1_000_000
+
             # Save mean and standard deviation
-            result["MeanCounts"] = result[count_columns].mean(axis=1)
-            result["StdDevCounts"] = result[count_columns].std(axis=1)
-
-            result["MeanEnrichment"] = result[["Enrichment{}".format(i) for i in column_numbers]].mean(axis=1)
-            result["StdEnrichment"] = result[["Enrichment{}".format(i) for i in column_numbers]].std(axis=1)
-
-            median = result["MeanEnrichment"].quantile()
-            result["MeanEnrichment"] /= median if median > 0 else result["MeanEnrichment"].mean()
-            result["StdEnrichment"] /= median if median > 0 else result["MeanEnrichment"].mean()
-
-            # Recalculate the enrichment confidence boundaries of the mean enrichment. I'm not sure if this is valid, but its currently the best approach.
-            lower, upper = estimate_enrichment_confidence_boundaries(result["MeanEnrichment"], 1, 1)
-            result["MeanEnrichment_Lower"] = lower
-            result["MeanEnrichment_Upper"] = upper
+            result["mean"] = result[normalized_column_names].mean(axis=1)
+            result["std"] = result[normalized_column_names].std(axis=1)
 
             # Calculate the Variance of the enrichment (var=std**2)
-            result["VarEnrichment"] = result["StdEnrichment"]**2
+            result["var"] = result["std"]**2
 
-            # Sort the table by MeanEnrichment, StdEnrichment
-            result.sort_values(by=["MeanEnrichment", "StdEnrichment"], ascending=False, inplace=True)
+            # Sort the table by mean and std
+            result.sort_values(by=["mean", "std"], ascending=False, inplace=True)
 
         except FileNotFoundError:
             raise EvaluationFileDoesNotExist("Result file <{}> does not exist.".format(filename))
@@ -295,6 +288,7 @@ class Evaluator:
         self.replicates = replicates
         self.count_columns = count_columns
         self.count_column_names = count_column_names
+        self.normalized_column_names = normalized_column_names
         self.column_numbers = column_numbers
 
         # This here essentially tries to rename the enumarted count_columns and replaces it with the filename. Makes identification easier.
@@ -303,7 +297,7 @@ class Evaluator:
 
         # Statistics
         self.unique_codons = self.count_table["Codon-Combination"].nunique()
-        self.all_counts = int(self.count_table[self.count_columns].sum().sum())
+        self.all_counts = int(self.count_table[self.count_columns].sum().sum()) - self.unique_codons*self.replicates
 
     def replicates_scatter(self, scale = None):
         """
@@ -316,7 +310,7 @@ class Evaluator:
 
         with io.BytesIO() as image_stream:
             ax = sns.pairplot(
-                self.count_table_purified[["Enrichment{}".format(i) for i in self.column_numbers]], diag_kind="kde", kind="reg", markers="+",
+                self.count_table_purified[self.normalized_column_names], diag_kind="kde", kind="reg", markers="+",
                 plot_kws=dict(),
                 diag_kws=dict(shade=True),
             )
@@ -336,7 +330,7 @@ class Evaluator:
             return
 
         with io.BytesIO() as image_stream:
-            ax = sns.regplot(x="MeanEnrichment", y="VarEnrichment", data=self.count_table_purified)
+            ax = sns.regplot(x="mean", y="var", data=self.count_table_purified)
             #ax = sns.regplot(x="MeanEnrichment", y="MeanEnrichment", data=self.count_table_purified, scatter=False, ax=ax, label=False)
 
             plt.savefig(image_stream, format=self.plot_format)
@@ -351,7 +345,7 @@ class Evaluator:
         :return:
         """
         with io.BytesIO() as image_stream:
-            ax = sns.kdeplot(self.count_table_reduced["MeanEnrichment"], shade=True, legend="mean counts")
+            ax = sns.kdeplot(self.count_table_reduced["mean"], shade=True, legend="mean counts")
 
             plt.savefig(image_stream, format=self.plot_format)
             img_base64 = base64.b64encode(image_stream.getvalue())
@@ -382,14 +376,14 @@ class Evaluator:
 
         # Reduces the dataframe to the top N hits if given.
         if top_hits is not None:
-            df_reduced = df.nlargest(top_hits, "MeanEnrichment")
+            df_reduced = df.nlargest(top_hits, "mean")
         else:
             df_reduced = df
 
         # Create the plot
         with io.BytesIO() as image_stream:
             fig, ax = Scatter3D(
-                df_reduced, codon_x, codon_y, "MeanEnrichment", c="MeanEnrichment", s="MeanEnrichment", complete_data=df,
+                df_reduced, codon_x, codon_y, "mean", c="mean", s="mean", complete_data=df,
                 project_on_z_plane=project_on_z_plane,
                 anchored=anchored
             )
@@ -423,14 +417,14 @@ class Evaluator:
         df = self.count_table_reduced.sort_values(by=[codon_x, codon_y, codon_z], ascending=[False, False, False])
 
         if top_hits is not None:
-            df_reduced = df.nlargest(top_hits, "MeanEnrichment").sort_values(by=[codon_x, codon_y, codon_z],
+            df_reduced = df.nlargest(top_hits, "mean").sort_values(by=[codon_x, codon_y, codon_z],
                                                                              ascending=[False, False, False])
         else:
             df_reduced = df
 
         with io.BytesIO() as image_stream:
             fig, ax = Scatter3D(
-                df_reduced, codon_x, codon_y, codon_z, c="MeanEnrichment", s="MeanEnrichment",
+                df_reduced, codon_x, codon_y, codon_z, c="mean", s="mean",
                 complete_data=df,
                 project_on_z_plane=project_on_z_plane,
                 anchored=anchored,
@@ -467,7 +461,7 @@ class Hit:
 
     @property
     def counts(self):
-        return self.row["MeanEnrichment"]
+        return self.row["mean"]
 
     @property
     def codons(self):
