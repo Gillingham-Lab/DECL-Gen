@@ -99,7 +99,7 @@ def qc(
         return r1_pass, r2_pass, codons
 
     # If simple did not work, we align and return.
-    metadata.quality = quality%1
+    metadata.quality = quality - metadata.quality
     return qc_align(reads, metadata)
 
 

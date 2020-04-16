@@ -20,7 +20,7 @@ class Tmp:
     Max = None
     Length = None
 
-def _qc_helper(read: Seq, r: ReadfileMetadata, f: int = 5) -> Tuple[bool, Optional[List[Seq]]]:
+def _qc_helper(read: Seq, r: ReadfileMetadata, f: int = 0.4) -> Tuple[bool, Optional[List[Seq]]]:
     """
     Helper method for qc_align()
     :param read:
@@ -49,7 +49,7 @@ def _qc_helper(read: Seq, r: ReadfileMetadata, f: int = 5) -> Tuple[bool, Option
     #if indels > 0:
     #    return False, None
 
-    if alignment[2] > (Tmp.Max - f*7 - 1):
+    if alignment[2] > (Tmp.Max * f - 1):
         return True, codons
     else:
         return False, None

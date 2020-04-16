@@ -17,12 +17,12 @@ def _qc_helper(read: Seq, r: ReadfileMetadata, n: int) -> bool:
 
     # Check around codon +- n
     for positions in r.coordinates:
-        # Check upstream of codon
-        if compare_sequence(read, r.template, positions[0] - n, positions[0]) is False:
+        # Check upstream of codon if enough positions
+        if positions[0] - n >= 0 and compare_sequence(read, r.template, positions[0] - n, positions[0]) is False:
             has_passed = False
 
         # Check downstream of codon
-        if compare_sequence(read, r.template, positions[1], positions[1] + n) is False:
+        if positions[1] + n < len(r.template) and compare_sequence(read, r.template, positions[1], positions[1] + n) is False:
             has_passed = False
 
     return has_passed
@@ -44,6 +44,7 @@ def qc(
 
     if metadata.quality is None:
         quality = 3
+        print("Set quality number to 3")
     else:
         try:
             quality = int(round(metadata.quality)) or 3
