@@ -162,6 +162,7 @@ class Evaluator:
         # If there is only 1 replicate, we need to manually set a few columns to 0
         if self.replicates == 1:
             self.count_table_purified["std"] = 0
+            self.count_table_purified["var"] = 0
 
         # Create a copy of the table where non-overlapping are removed.
         self.count_table_reduced = self.count_table_purified.dropna()
