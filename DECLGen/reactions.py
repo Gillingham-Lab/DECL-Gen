@@ -94,6 +94,7 @@ predefinedReactions = {
         ],
         "protections": [
             "[N;$(NC=[O,S])]",
+            "cN",
         ],
     },
 
@@ -101,6 +102,9 @@ predefinedReactions = {
         "smarts": [
             "[C:1](=[O:2])-[OH1]>>[C:1](=[O:2])[R]",
         ],
+        "protections": [
+            "[C](=[O])(-[N,O,S])-[OH1]"
+        ]
     },
 
     "CuAAC_Alkyne": {
