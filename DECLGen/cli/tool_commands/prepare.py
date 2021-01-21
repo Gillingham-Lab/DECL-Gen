@@ -10,6 +10,7 @@ def prepare(
     glue: "If true, unzipped sequencing files are glues together" = False,
     no_decompress: "Set to true if you only want to copy the file." = False,
     simplify_name: "Simplifies the filename by using the directory name." = False,
+    move: "Moves the file instead of copying." = False,
 ):
     """
     Prepares a sequencing run by copying './*/sample.fq.gz' files to './sample.fq'.
@@ -87,8 +88,12 @@ def prepare(
 
             # If we don't want glue, and decompression is not wanted, we can just copy the file
             if no_decompress is True and glue is False:
-                shutil.copyfile(todo[key][0], target_filename + ".gz")
-                print(f"   - Copy {os.path.basename(target_filename)}")
+                if move:
+                    shutil.move(todo[key][0], target_filename + ".gz")
+                    print(f"   - Moved {os.path.basename(target_filename)}")
+                else:
+                    shutil.copyfile(todo[key][0], target_filename + ".gz")
+                    print(f"   - Copy {os.path.basename(target_filename)}")
             # If not, we can gzip-read the file and save it into a new (gzipped-) file.
             else:
                 # Determine the way to open the target file
