@@ -1,6 +1,6 @@
 from typing import Union, List, Tuple
-from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
+
 
 def extract(read: Union[Seq, str], coordinates: List[Tuple[int, int]], invert=False) -> List[Seq]:
     """
@@ -16,7 +16,7 @@ def extract(read: Union[Seq, str], coordinates: List[Tuple[int, int]], invert=Fa
         codon = read[start:stop]
 
         if type(codon) == str:
-            codon = Seq(codon, IUPAC.unambiguous_dna)
+            codon = Seq(codon)
 
         if invert is True:
             codons.append(codon.reverse_complement())

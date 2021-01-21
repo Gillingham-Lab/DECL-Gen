@@ -3,7 +3,6 @@ from operator import mul, itemgetter
 from functools import reduce
 from Bio import pairwise2, SeqIO
 from Bio.Seq import Seq
-from Bio.Alphabet import IUPAC
 import multiprocessing as mp
 import pandas as pd
 
@@ -446,7 +445,7 @@ class Library:
         if blocksize is None:
             blocksize = min(100_000, kwargs["max_reads"]//(threads-1))
 
-        template_f = Seq(self.get_formatted_stub_dna_template().upper(), alphabet=IUPAC.ambiguous_dna)
+        template_f = Seq(self.get_formatted_stub_dna_template().upper())
         template_r = template_f.reverse_complement()
 
         if no_auto_detection is False:
