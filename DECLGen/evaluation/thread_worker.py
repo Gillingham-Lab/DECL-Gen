@@ -1,4 +1,5 @@
 from typing import Generator, Optional
+import gzip
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from .metadata import ReadfileWorkerMetadata
@@ -40,8 +41,23 @@ def read_loader(
     :param data:
     :return:
     """
-    reads_1 = SeqIO.parse(data.r1.filename, "fastq")
-    reads_2 = SeqIO.parse(data.r2.filename, "fastq") if data.is_paired() else None
+    # Open files with gzip if they are zipped
+    if data.r1.filename.endswith(".gz"):
+        handle_1 = gzip.open(data.r1.filename, "rt", encoding="ASCII")
+    else:
+        handle_1 = open(data.r1.filename, "r")
+
+    reads_1 = SeqIO.parse(handle_1, "fastq")
+
+    if data.is_paired():
+        if data.r2.filename.endswith(".gz"):
+            handle_2 = gzip.open(data.r2.filename, "rt", encoding="ASCII")
+        else:
+            handle_2 = open(data.r2.filename)
+
+        reads_2 = SeqIO.parse(handle_2, "fastq") if data.is_paired() else None
+    else:
+        reads_2 = None
 
     read_block = ReadBlock(data)
     read_total = 0
