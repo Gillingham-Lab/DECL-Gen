@@ -87,7 +87,7 @@ def prepare(
 
             # If we don't want glue, and decompression is not wanted, we can just copy the file
             if no_decompress is True and glue is False:
-                shutil.copyfile(todo[key][0], target_filename)
+                shutil.copyfile(todo[key][0], target_filename + ".gz")
             # If not, we can gzip-read the file and save it into a new (gzipped-) file.
             else:
                 # Determine the way to open the target file
