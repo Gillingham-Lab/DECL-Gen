@@ -5,6 +5,7 @@ from Bio import pairwise2, SeqIO
 from Bio.Seq import Seq
 import multiprocessing as mp
 import pandas as pd
+import gzip
 
 from DECLGen.exceptions import \
     LibraryPropertiesNotPreCalculated, \
@@ -435,7 +436,12 @@ class Library:
 
         # Count lines
         if "max_reads" not in kwargs or kwargs["max_reads"] is None:
-            with open(r1, "r") as fh:
+            if r1.endswith(".gz"):
+                opener = (gzip.open, [r1, "rt"], {"encoding": "ASCII"})
+            else:
+                opener = (open, [r1, "r"], {})
+
+            with opener[0](*opener[1], **opener[2]) as fh:
                 lines = 0
                 for line in fh:
                     lines += 1
