@@ -7,10 +7,10 @@ import shutil
 def prepare(
     source: "Sequencing main folder containing each sample in a separate directory (as .tar.gz files)",
     target: "Target folder to put unzipped files into" = None,
-    glue: "If true, unzipped sequencing files are glues together" = False,
+    glue: "If set, unzipped sequencing files are glues together" = False,
     no_decompress: "Set to true if you only want to copy the file." = False,
     simplify_name: "Simplifies the filename by using the directory name." = False,
-    move: "Moves the file instead of copying." = False,
+    move: "Moves the file instead of copying. Only works with --no-decompress, and no --glue" = False,
 ):
     """
     Prepares a sequencing run by copying './*/sample.fq.gz' files to './sample.fq'.
@@ -51,7 +51,6 @@ def prepare(
         if len(filenames) == 0:
             print("No sequencing files found.\n")
             continue
-
 
         samplename = os.path.basename(dirpath)
         todo = {}
@@ -118,4 +117,3 @@ def prepare(
         print()
 
     print(f"{Fore.GREEN}Run complete.{Fore.RESET}")
-
