@@ -24,12 +24,32 @@ def create_batch_extraction(
     save_failed: "Save failed reads" = False,
     skip_codon_matching: "Skips the automated invalidation of mismatching codons." = False,
 ):
+    """
+    Generates a batch file to extract reads from all files within a given path.
+
+    The generated batch file can be used as a seed file for a slurm array job.
+
+    Should be called from the library working directory to get the path right.
+    """
     init()
 
+    # Error out if the path does not exist
     if not os.path.exists(path):
-        print("{Fore.RED}The given path was not found ({}){Fore.RESET}".format(path, Fore=Fore))
+        print(f"{Fore.RED}The given path was not found ({path}).{Fore.RESET}")
+        return 1
 
+    # Error out of the path is not a directory
+    if not os.path.isdir(path):
+        print(f"{Fore.RED}The given path is not a directory ({path}).{Fore.RESET}")
+        return 1
+
+    # Error out if not in a library directory
+    if not os.path.exists("decl_gen.data"):
+        print(f"{Fore.YELLOW}This command should be called from a library folder (no decl_gen.data found).{Fore.RESET}")
+
+    # List everything from current directory
     files = os.listdir(path)
+    # Prepare the two mate lists
     mates1 = []
     mates2 = []
 

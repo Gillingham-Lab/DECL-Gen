@@ -12,7 +12,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 from DECLGen import Runtime
 from DECLGen.report import HTMLReport, TextReport
-from DECLGen.exceptions import DECLException
+from DECLGen.exceptions import DECLException, EvaluationFileDoesNotExist
 from DECLGen.evaluation.evaluator import Evaluator
 from DECLGen.cli.helpers import ProgressBar
 
@@ -47,12 +47,18 @@ def report(
         r.error_exit(e)
 
     with ProgressBar(r.t, desc="Loading files") as progressBar:
-        rr = Evaluator(*result, progress_bar=progressBar, plot_format=plot_format, properties=library_properties)
+        try:
+            rr = Evaluator(*result, progress_bar=progressBar, plot_format=plot_format, properties=library_properties)
+        except EvaluationFileDoesNotExist as e:
+            print(r.t.red(f"{e}"))
 
     filename_path, filename_base, filename_report, filename_radical = _parse_target_filename(save_as, result[0])
 
     # Save csv file
-    rr.save_df(os.path.join(filename_path, filename_radical + "-valid.csv"))
+    try:
+        rr.save_df(filename_radical + "-valid.csv")
+    except FileNotFoundError:
+        print(r.t.red("It was not possible to save the valid files in {filename_radical}"))
 
     # Plot files
     with HTMLReport(filename_report, filename_base) as html_report:
