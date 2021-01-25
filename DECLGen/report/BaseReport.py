@@ -1,4 +1,4 @@
-from typing import Dict, List, TypeVar, Any
+from typing import Dict, List, TypeVar, Any, Tuple
 
 Real = TypeVar("real", int, float)
 class BaseReport:
@@ -28,8 +28,11 @@ class BaseReport:
     def set_title(self, title: str):
         self.title = title
 
-    def add_stats(self, name: str, value: str):
+    def add_stat(self, name: str, value: str):
         self.stats.append({"name": name, "value": value})
+
+    def add_stats(self, list_of_stats: List[Tuple[str, str]]):
+        self.stats += [{"name": name, "value": value} for name, value in list_of_stats]
 
     def _get_formatted_stats(self):
         raise NotImplementedError()

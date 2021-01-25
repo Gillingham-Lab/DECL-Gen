@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import statsmodels as sm
 from statsmodels.graphics.gofplots import qqplot_2samples
+import os
+
 
 def compare(
         signal_file: "Signal file",
         noise_file: "Noise file",
         result_file: "Result file",
-        dummy_file: "Dummy files" = None,
 ):
     """
     Compares a signal file to a noise file and reports relative enrichment.

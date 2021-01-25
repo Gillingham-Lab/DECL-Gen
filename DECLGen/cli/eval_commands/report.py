@@ -15,6 +15,7 @@ from DECLGen.report import HTMLReport, TextReport
 from DECLGen.exceptions import DECLException, EvaluationFileDoesNotExist
 from DECLGen.evaluation.evaluator import Evaluator
 from DECLGen.cli.helpers import ProgressBar
+from DECLGen.evaluation.plotter_report import ReportPlotter
 
 
 def _parse_target_filename(save_as: str, result_filename: str):
@@ -28,6 +29,7 @@ def _parse_target_filename(save_as: str, result_filename: str):
 
     return os.path.dirname(save_as), os.path.basename(save_as_radical), save_as, save_as_radical
 
+
 @argh.arg("result", nargs="+")
 @argh.arg("--save-as", type=str)
 @argh.arg("--top")
@@ -38,6 +40,17 @@ def report(
         top: "Number of top hits to include in the report" = 10,
         plot_format: "File formats of the plots" = "png",
 ):
+    """
+    Generates a summary of the given replicates.
+
+
+    *Must be run from a declGen library folder (requires a valid decl_gen.data and library-properties.csv)*
+
+    This command summarizes over the given replicates .csv files and reports on some parameters, such as coverage,
+    known and unknown codons, and amount of counts.
+
+    The result files are required for declGen compare.
+    """
     r = Runtime()
 
     # Get library properties
@@ -62,48 +75,76 @@ def report(
 
     # Plot files
     with HTMLReport(filename_report, filename_base) as html_report:
-        html_report.add_stats("Replicates", "{:>10d}".format(rr.replicates))
-        html_report.add_stats("Total counts", "{:>10.0f}".format(rr.all_counts))
-        html_report.add_stats("All codon combinations found", "{:>10d}".format(rr.unique_codons))
-        html_report.add_stats("Valid combinations",
-                              "{:>10d} ({:.1f}% of all combinations, {:.1f}% of all counts)".format(
-                                  rr.valid_codons,
-                                  rr.valid_codons / rr.unique_codons * 100,
-                                  rr.valid_counts / rr.all_counts * 100
-                                )
-                              )
-        html_report.add_stats("Invalid combinations",
-                              "{:>10d} ({:.1f}% of all combinations, {:.1f}% of all counts)".format(
-                                  rr.unique_codons - rr.valid_codons,
-                                  100 - rr.valid_codons / rr.unique_codons * 100,
-                                  100 - rr.valid_counts / rr.all_counts * 100
-                                )
-                              )
+        html_report.add_stats([
+            (
+                "Replicates",
+                f"{rr.replicates:>10d}"
+            ),
+            (
+                "Replicate files",
+                ", ".join([x[2:] for x in rr.normalized_column_names]),
+            ),
+            (
+                "Total counts",
+                f"{rr.all_counts:>10.0f}"
+            ),
+            (
+                "All codon combinations found",
+                f"{rr.unique_codons:>10.0f}"
+            ),
+            (
+                "Existing codons",
+                f"{rr.valid_codons:>10d} "
+                f"({rr.valid_codons / rr.unique_codons * 100:.1f}% of all combinations, "
+                f"{rr.valid_counts / rr.all_counts * 100:.1f}% of all counts)"
+            ),
+            (
+                "Mutated codons",
+                f"{rr.unique_codons - rr.valid_codons:>10d} "
+                f"({100 - rr.valid_codons / rr.unique_codons * 100:.1f}% of all combinations, "
+                f"{100 - rr.valid_counts / rr.all_counts * 100:.1f}% of all counts)"
+            ),
+            (
+                "Library size",
+                f"{rr.library_size:>10d}"
+            ),
+            (
+                "Structures not found",
+                f"{rr.library_size - rr.valid_codons:>10d} "
+                f"({(rr.library_size - rr.valid_codons) / rr.library_size * 100:.2f}% of library)"
+            ),
+            # (
+            #    "Expected missing",
+            #    f"{rr.expected_missing:>10.0f}"
+            # ),
+            (
+                "Expected mean coverage",
+                f"{rr.all_counts / rr.library_size / rr.replicates:>10.1f}X"
+            ),
+            (
+                "Actual mean coverage",
+                f"{rr.valid_counts / rr.library_size / rr.replicates:>10.1f}X"
+            ),
+        ])
 
-        html_report.add_stats("Library size", "{:>10d}".format(rr.library_size))
-        html_report.add_stats("Structures not found",
-                              "{:>10d} ({:.2f}% of library)".format(
-                                  rr.library_size - rr.valid_codons,
-                                  (rr.library_size - rr.valid_codons) / rr.library_size * 100
-                                )
-                              )
-        html_report.add_stats("Expected missing", "{:>10.0f}".format(rr.expected_missing))
-        html_report.add_stats("Expected average coverage", "{:>10.1f}X".format(rr.all_counts / rr.library_size / rr.replicates))
-        html_report.add_stats("Actual average coverage", "{:>10.1f}X".format(rr.valid_counts / rr.library_size / rr.replicates))
-
+        plotter = ReportPlotter(rr)
 
         with ProgressBar(r.t, desc="Drawing") as pb:
             # Plotting some meta information
-            html_report.append_plot("Replication scatter", rr.replicates_scatter(), rr._get_encoding())
+            #html_report.append_plot("Replication scatter", rr.replicates_scatter(), rr._get_encoding())
+            html_report.append_plotly(*plotter.cross_correlation())
             pb.update(0.05)
 
-            html_report.append_plot("Var vs mean", rr.variance_vs_mean(), rr._get_encoding())
+            html_report.append_plotly(*plotter.count_scatters())
             pb.update(0.1)
 
-            html_report.append_plot("Averaged histogram", rr.count_histogram(), rr._get_encoding())
+            #html_report.append_plot("Averaged histogram", rr.count_histogram(), rr._get_encoding())
             pb.update(0.2)
 
-            if rr.diversity_elements_count == 2:
+            html_report.append_plotly(*plotter.hits_preview())
+            pb.update(0.5)
+
+            """if rr.diversity_elements_count == 2:
                 html_report.append_plot("3D Scatter", rr.two_element_3d_scatter(), rr._get_encoding())
                 pb.update(0.3)
 
@@ -119,15 +160,14 @@ def report(
                     rr._get_encoding())
                 pb.update(0.3)
 
-                pb.update(0.4)
-
+                pb.update(0.4)"""
 
             i = 0
             for hit in rr.iter_hits(top):
                 html_report.add_entry(hit.rank, hit.counts, hit.codons, hit.smiles, hit.draw())
                 i += 1
 
-                pb.update(0.5 + 0.5*(i/top))
+                pb.update(0.5 + 0.5 * (i / top))
 
         text_report = TextReport.copyFromOther(html_report)
 
