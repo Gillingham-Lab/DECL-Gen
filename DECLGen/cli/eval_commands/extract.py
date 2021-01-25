@@ -7,6 +7,7 @@ from DECLGen.exceptions import LibraryNoDNATemplateException
 from DECLGen.evaluation.qc import Type
 from DECLGen.cli.helpers import ProgressBar
 
+
 @argh.arg("r2", nargs="?")
 @argh.arg("--method", choices=Type.all)
 @argh.arg("--blocksize", type=int)
