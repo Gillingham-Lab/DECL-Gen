@@ -94,6 +94,10 @@ def compare(
 
     # p-Value
     _, data["pValue"] = f_oneway(data[signal_count_columns], data[noise_count_columns], axis=1)
+
+    # Adjust p-Value with Benjamini-Hochberg
+    # multipletests returns reject, pvalue_corrected, alphacSidak, alphacBonf
+    # Only the corrected p_value is of interest here.
     data["qValue"] = multipletests(data["pValue"], alpha=0.10, method="fdr_bh")[1]
 
     # Score

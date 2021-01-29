@@ -63,7 +63,7 @@ def report(
         try:
             rr = Evaluator(*result, progress_bar=progressBar, plot_format=plot_format, properties=library_properties)
         except EvaluationFileDoesNotExist as e:
-            print(r.t.red(f"{e}"))
+            print(r.t.val_bad(f"{e}"))
 
     filename_path, filename_base, filename_report, filename_radical = _parse_target_filename(save_as, result[0])
 
@@ -71,7 +71,7 @@ def report(
     try:
         rr.save_df(filename_radical + "-valid.csv")
     except FileNotFoundError:
-        print(r.t.red("It was not possible to save the valid files in {filename_radical}"))
+        print(r.t.val_bad("It was not possible to save the valid files in {filename_radical}"))
 
     # Plot files
     with HTMLReport(filename_report, filename_base) as html_report:
@@ -135,13 +135,13 @@ def report(
             html_report.append_plotly(*plotter.cross_correlation())
             pb.update(0.05)
 
-            html_report.append_plotly(*plotter.count_scatters())
+            html_report.append_plotly(*plotter.count_scatters()) if len(rr.codon_rank_columns) == 3 else None
             pb.update(0.1)
 
             #html_report.append_plot("Averaged histogram", rr.count_histogram(), rr._get_encoding())
             pb.update(0.2)
 
-            html_report.append_plotly(*plotter.hits_preview())
+            html_report.append_plotly(*plotter.hits_preview()) if 3 >= len(rr.codon_rank_columns) >= 2 else None
             pb.update(0.5)
 
             """if rr.diversity_elements_count == 2:
